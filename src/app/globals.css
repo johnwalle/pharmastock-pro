@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --primary: #3B82F6; /* PharmStock primary blue */
+  --secondary: #10B981; /* PharmStock secondary green */
+  --warning: #F59E0B; /* Amber for alerts */
+  --danger: #EF4444; /* Red for critical alerts */
+  --neutral-light: #F3F4F6; /* Light gray background */
+  --neutral-dark: #1F2937; /* Dark gray text */
+  --neutral-white: #FFFFFF; /* White for cards */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-neutral-light: var(--neutral-light);
+  --color-neutral-dark: var(--neutral-dark);
+  --color-neutral-white: var(--neutral-white);
+  --font-sans: "Inter", sans-serif; /* Replace geist-sans with Inter */
+  --font-mono: "Inter", monospace; /* Updated to match design */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --primary: #60A5FA; /* Lighter blue for dark mode */
+    --secondary: #34D399; /* Lighter green for dark mode */
+    --warning: #FBBF24; /* Lighter amber for dark mode */
+    --danger: #F87171; /* Lighter red for dark mode */
+    --neutral-light: #1F2937; /* Darker neutral for background */
+    --neutral-dark: #D1D5DB; /* Lighter neutral for text */
+    --neutral-white: #374151; /* Darker white substitute */
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans); /* Use Inter from @theme */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
