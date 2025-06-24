@@ -62,7 +62,7 @@ const Navbar = () => {
                             Demo
                         </Link>
                         <Link
-                            href="/auth/trial"
+                            href="/api/auth/signup"
                             className={`ml-4 px-5 py-2.5 rounded-xl text-sm font-semibold transition duration-300 shadow-sm cursor-pointer ${scrolled
                                     ? 'bg-white text-primary hover:bg-gray-100'
                                     : 'bg-primary text-white hover:bg-blue-700'
