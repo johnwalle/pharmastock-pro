@@ -88,32 +88,31 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
 
   return (
     <aside
-      className={`bg-white shadow-lg h-screen sticky top-0 transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-16' : 'w-64'
-      } flex flex-col z-50`}
+      className={`bg-blue-900 text-white h-screen sticky top-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'w-16' : 'w-64'
+        } flex flex-col z-50 shadow-xl font-sans`}
     >
       {/* Logo Section */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-blue-700">
         {!isCollapsed && (
           <div className="flex items-center space-x-2">
             <img src="/logo.png" alt="Pharmacy Logo" className="h-8 w-8" />
-            <span className="text-xl font-bold text-blue-900">PharmaStock</span>
+            <span className="text-lg font-semibold tracking-wide">PharmaStock</span>
           </div>
         )}
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="p-2 rounded-full hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-white"
           aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {isCollapsed ? (
-            <ChevronRight className="h-6 w-6 text-blue-900" />
+            <ChevronRight className="h-5 w-5 text-white" />
           ) : (
-            <ChevronLeft className="h-6 w-6 text-blue-900" />
+            <ChevronLeft className="h-5 w-5 text-white" />
           )}
         </button>
       </div>
 
-      {/* Navigation Items */}
+      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto">
         <ul className="space-y-1 p-2">
           {menuItems
@@ -122,18 +121,16 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
               <li key={item.name}>
                 <button
                   onClick={() => onSelectComponent(item.component)}
-                  className={`flex items-center p-3 rounded-lg w-full text-left ${
-                    activeComponent === item.component
-                      ? 'bg-green-50 text-green-600'
-                      : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
-                  } transition-colors duration-200 ${
-                    isCollapsed ? 'justify-center' : 'space-x-3'
-                  }`}
+                  className={`flex items-center p-3 rounded-lg w-full text-left ${activeComponent === item.component
+                      ? 'bg-white/10 text-white font-medium'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    } transition-all duration-200 ${isCollapsed ? 'justify-center' : 'space-x-3'
+                    }`}
                   aria-label={item.name}
                 >
-                  <item.icon className={`h-6 w-6 ${isCollapsed ? 'mx-auto' : ''}`} />
+                  <item.icon className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : ''}`} />
                   {!isCollapsed && (
-                    <span className="text-sm font-medium">{item.name}</span>
+                    <span className="text-sm tracking-wide">{item.name}</span>
                   )}
                 </button>
               </li>
@@ -141,20 +138,20 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
         </ul>
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-2 border-t border-gray-200">
+      {/* Logout */}
+      <div className="p-2 border-t border-blue-700">
         <button
           onClick={() => onSelectComponent('Logout')}
-          className={`flex items-center p-3 rounded-lg w-full text-left text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200 ${
-            isCollapsed ? 'justify-center' : 'space-x-3'
-          }`}
+          className={`flex items-center p-3 rounded-lg w-full text-left text-white/80 hover:bg-red-500 hover:text-white transition-colors duration-200 ${isCollapsed ? 'justify-center' : 'space-x-3'
+            }`}
           aria-label="Logout"
         >
-          <LogOut className={`h-6 w-6 ${isCollapsed ? 'mx-auto' : ''}`} />
-          {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
+          <LogOut className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : ''}`} />
+          {!isCollapsed && <span className="text-sm tracking-wide">Logout</span>}
         </button>
       </div>
     </aside>
+
   );
 };
 
