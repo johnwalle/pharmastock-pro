@@ -23,8 +23,8 @@ const AuthPage: React.FC = () => {
                 <div className="flex mb-6 rounded-md overflow-hidden border border-gray-300">
                     <button
                         className={`w-1/2 py-2 font-medium ${activeTab === "login"
-                            ? "bg-primary text-white"
-                            : "bg-white text-cyan-600 hover:bg-cyan-50"
+                                ? "bg-primary text-white"
+                                : "bg-white text-cyan-600 hover:bg-cyan-50"
                             }`}
                         onClick={() => setActiveTab("login")}
                     >
@@ -32,8 +32,8 @@ const AuthPage: React.FC = () => {
                     </button>
                     <button
                         className={`w-1/2 py-2 font-medium ${activeTab === "signup"
-                            ? "bg-primary text-white"
-                            : "bg-white text-cyan-600 hover:bg-cyan-50"
+                                ? "bg-primary text-white"
+                                : "bg-white text-cyan-600 hover:bg-cyan-50"
                             }`}
                         onClick={() => setActiveTab("signup")}
                     >
@@ -41,7 +41,11 @@ const AuthPage: React.FC = () => {
                     </button>
                 </div>
 
-                {activeTab === "login" ? <LoginForm /> : <SignupForm />}
+                {activeTab === "login" ? (
+                    <LoginForm />
+                ) : (
+                    <SignupForm onSuccess={() => setActiveTab("login")} />
+                )}
             </div>
         </div>
     );
