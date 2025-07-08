@@ -3,15 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/layout/sidebar';
 import Dashboard from '@/components/dashboard/dashboard';
+import SearchFilter from '@/components/searchAndFilter/searchAndFilter';
+import MedicineManagement from '@/components/medicines/medicineManagemenet';
+import Reports from '@/components/report/report';
+import ImageGallery from '@/components/gallery/gallery';
+import AuditLog from '@/components/auditLog/auditLog';
+import UserManagement from '@/components/user-management/userManagement';  
 
 // Placeholder components for demo
-const MedicineManagement = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Medicine Management</h1><p>Add, edit, or remove medicines.</p></div>;
-const StockMonitoring = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Stock Monitoring</h1><p>Real-time stock levels.</p></div>;
-const SearchFilter = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Search & Filter</h1><p>Find medicines quickly.</p></div>;
-const Reports = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Reports</h1><p>Generate stock reports.</p></div>;
-const ImageGallery = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Image Gallery</h1><p>View medicine images.</p></div>;
-const AuditLog = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Audit Log</h1><p>User action history.</p></div>;
-const UserManagement = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">User Management</h1><p>Manage user accounts.</p></div>;
+
+
 const Suppliers = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1><p>Manage supplier details.</p></div>;
 const Settings = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Settings</h1><p>Configure system settings.</p></div>;
 const Logout = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Logged Out</h1><p>You have been logged out.</p></div>;
@@ -19,7 +20,6 @@ const Logout = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-
 const componentMap: Record<string, any> = {
   Dashboard,
   MedicineManagement,
-  StockMonitoring,
   SearchFilter,
   Reports,
   ImageGallery,
