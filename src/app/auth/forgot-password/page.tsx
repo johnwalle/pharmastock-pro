@@ -1,17 +1,40 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { FaKey, FaPaperPlane } from "react-icons/fa";
-import { IoArrowBack } from "react-icons/io5";
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForgotPassword } from '@/hooks/useForgotPassword';
+import Link from 'next/link';
+import { FaKey, FaPaperPlane } from 'react-icons/fa';
+import { IoArrowBack } from 'react-icons/io5';
+import toast from 'react-hot-toast';
+
+// Validation schema
+const forgotPasswordSchema = z.object({
+  email: z.string().nonempty('Email is required').email('Please enter a valid email address'),
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // You can add API call here
-    console.log("Reset link sent to:", email);
+  const { error, isLoading, sendResetLink } = useForgotPassword();
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    const toastId = toast.loading('Sending reset link...');
+    const result = await sendResetLink(data.email);
+    toast.dismiss(toastId);
+
+    if (!result.success) {
+      toast.error(result.message || 'Something went wrong');
+    }
   };
 
   return (
@@ -27,36 +50,40 @@ const ForgotPassword = () => {
           Forgot Your Password?
         </h2>
         <p className="text-center text-gray-600 mb-6 text-sm">
-          Enter your email address and we'll send you a link to reset your password.
+          Enter your email address and we&apos;ll send you a link to reset your password.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email Address
             </label>
             <input
               type="email"
+              {...register('email')}
               placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600"
-              required
+              className={`w-full px-4 py-2 border ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              } rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-600`}
             />
+            {errors.email && (
+              <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+            )}
           </div>
 
           <button
             type="submit"
-            className="w-full cursor-pointer bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-lg flex justify-center items-center gap-2 transition"
+            disabled={isSubmitting || isLoading}
+            className="w-full cursor-pointer bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 rounded-lg flex justify-center items-center gap-2 transition disabled:opacity-60"
           >
             <FaPaperPlane className="text-white" />
-            Send Reset Link
+            {isSubmitting || isLoading ? 'Sending...' : 'Send Reset Link'}
           </button>
 
           <div className="flex justify-start mt-4">
             <Link
+              href="/auth/signup"
               className="flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-cyan-600 transition"
-             href="/auth/signup"
             >
               <IoArrowBack />
               Back to Login
@@ -64,7 +91,6 @@ const ForgotPassword = () => {
           </div>
         </form>
 
-        {/* Footer Help Message */}
         <div className="mt-8 bg-gray-100 p-4 rounded-lg text-center text-sm text-gray-700">
           <div className="flex justify-center items-center gap-1 mb-1 font-medium">
             <span className="text-gray-500">❓</span>
