@@ -1,96 +1,102 @@
-// src/store/authStore.ts
-import { create } from 'zustand';
-import { apiRequest } from '@/lib/api';
-import { setTokenCookie } from '@/lib/auth/jwt';
+'use client';
 
-interface User {
-  id: string;
-  fullName: string;
+import { create } from 'zustand';
+
+interface Tokens {
+  access: {
+    token: string;
+    expires: string;
+  };
+}
+
+interface UserData {
+  _id: string;
   email: string;
-  role?: string;
+  fullName: string;
+  role: string;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tokens: Tokens;
 }
 
 interface AuthState {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-
-  setUser: (user: User | null) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-
-  register: (data: { fullName: string; email: string; password: string }) => Promise<number>;
-  login: (data: { email: string; password: string }) => Promise<number>;
+  userData: UserData | null;
+  setUserData: (userData: UserData) => void;
+  clearUserData: () => void;
+  updateAccessToken: (accessToken: Tokens['access']) => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  loading: false,
-  error: null,
+// Utility: Set cookie
+function setCookie(name: string, value: string, days: number) {
+  const date = new Date();
+  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${encodeURIComponent(value)};${expires};path=/`;
+}
 
-  setUser: (user) => set({ user }),
-  setLoading: (loading) => set({ loading }),
-  setError: (error) => set({ error }),
-
-  register: async ({ fullName, email, password }) => {
-    set({ loading: true, error: null });
-
-    try {
-      const { status } = await apiRequest<{ message: string }>(
-        'http://localhost:5000/api/v1/auth/register',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, email, password }),
-        }
-      );
-
-      console.log('Registration status:', status);
-
-      set({ loading: false });
-      return status;
-    } catch (err: any) {
-      set({ error: err.message, loading: false });
-      return 500; // fallback status
+// Utility: Get cookie
+function getCookie(name: string): string {
+  const nameEQ = `${name}=`;
+  const cookies = decodeURIComponent(document.cookie).split(';');
+  for (let c of cookies) {
+    const cookie = c.trim();
+    if (cookie.startsWith(nameEQ)) {
+      return cookie.substring(nameEQ.length);
     }
+  }
+  return '';
+}
+
+const authStore = create<AuthState>((set, get) => ({
+  userData: (() => {
+    try {
+      const raw = getCookie('userData');
+      return raw ? (JSON.parse(raw) as UserData) : null;
+    } catch (e) {
+      console.error('Error parsing userData cookie:', e);
+      return null;
+    }
+  })(),
+
+  setUserData: (userData) => {
+    // Only store access token on client side
+    const minimalUserData = {
+      ...userData,
+      tokens: {
+        access: userData.tokens.access
+      },
+    };
+
+    set({ userData: minimalUserData });
+    setCookie('userData', JSON.stringify(minimalUserData), 7);
+    setCookie('accessToken', userData.tokens.access.token, 7); // for middleware
+    console.log('User data set:', minimalUserData);
   },
 
-login: async ({ email, password }) => {
-  set({ loading: true, error: null });
+  clearUserData: () => {
+    set({ userData: null });
+    setCookie('userData', '', -1);       // delete cookie
+    setCookie('accessToken', '', -1);    // delete accessToken
+    console.log('User data cleared');
+  },
 
-  const { data, status, error } = await apiRequest<{
-    message: string;
-    user: User;
-    tokens: {
-      access: {
-        token: string;
-        expires: string;
-      };
-      refresh: {
-        token: string;
-        expires: string;
-      };
+  updateAccessToken: (newAccessToken) => {
+    const current = get().userData;
+    if (!current) return;
+
+    const updated = {
+      ...current,
+      tokens: {
+        access: newAccessToken
+      },
     };
-  }>('http://localhost:5000/api/v1/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
 
- if (error || !data) {
-  set({ error: error ?? 'Login failed', loading: false });
-  return status;
-}
-
-  console.log('Login Tokens:', data.tokens);
-  console.log('Login Status Code:', status);
-
-  // Store access and refresh tokens in cookies
-  await setTokenCookie(data.tokens);
-  // Set authenticated user state
-  set({ user: data.user, loading: false });
-
-  return status;
-}
-
+    set({ userData: updated });
+    setCookie('userData', JSON.stringify(updated), 7);
+    setCookie('accessToken', newAccessToken.token, 7);
+    console.log('Access token updated:', newAccessToken);
+  },
 }));
+
+export default authStore;
