@@ -3,7 +3,10 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { medicineSchema, MedicineFormValues } from '@/validators/medicineSchema';
+import {
+  createMedicineSchema,
+  CreateMedicineFormValues,
+} from '@/validators/medicineSchema';
 import { UploadDropzone } from './uploadDropzone';
 import { Lock, AlertCircle } from 'lucide-react';
 import useCreateMedicine from '@/hooks/useCreateMedicine';
@@ -17,8 +20,8 @@ export default function AddMedicineForm() {
     watch,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<MedicineFormValues>({
-    resolver: zodResolver(medicineSchema),
+  } = useForm<CreateMedicineFormValues>({
+    resolver: zodResolver(createMedicineSchema),
     defaultValues: {
       brandName: '',
       genericName: '',
@@ -43,7 +46,7 @@ export default function AddMedicineForm() {
   const selectedImage = watch('image') as File | undefined;
   const { createMedicine, isLoading, error } = useCreateMedicine();
 
-  const onSubmit = async (data: MedicineFormValues) => {
+  const onSubmit = async (data: CreateMedicineFormValues) => {
     try {
       if (!data.image) {
         throw new Error('Image is required.');
@@ -104,17 +107,17 @@ export default function AddMedicineForm() {
                 {field.label}
               </label>
               <input
-                {...register(field.name as keyof MedicineFormValues)}
+                {...register(field.name as keyof CreateMedicineFormValues)}
                 placeholder={field.placeholder}
                 className={clsx(
                   'w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
-                  errors[field.name as keyof MedicineFormValues] && 'border-red-500'
+                  errors[field.name as keyof CreateMedicineFormValues] && 'border-red-500'
                 )}
               />
-              {errors[field.name as keyof MedicineFormValues] && (
+              {errors[field.name as keyof CreateMedicineFormValues] && (
                 <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  {errors[field.name as keyof MedicineFormValues]?.message as string}
+                  {errors[field.name as keyof CreateMedicineFormValues]?.message as string}
                 </p>
               )}
             </div>
@@ -133,16 +136,16 @@ export default function AddMedicineForm() {
               <input
                 type="number"
                 min={0}
-                {...register(field.name as keyof MedicineFormValues)}
+                {...register(field.name as keyof CreateMedicineFormValues)}
                 className={clsx(
                   'w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
-                  errors[field.name as keyof MedicineFormValues] && 'border-red-500'
+                  errors[field.name as keyof CreateMedicineFormValues] && 'border-red-500'
                 )}
               />
-              {errors[field.name as keyof MedicineFormValues] && (
+              {errors[field.name as keyof CreateMedicineFormValues] && (
                 <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  {errors[field.name as keyof MedicineFormValues]?.message as string}
+                  {errors[field.name as keyof CreateMedicineFormValues]?.message as string}
                 </p>
               )}
             </div>
@@ -204,16 +207,16 @@ export default function AddMedicineForm() {
               </label>
               <input
                 type="date"
-                {...register(field as keyof MedicineFormValues)}
+                {...register(field as keyof CreateMedicineFormValues)}
                 className={clsx(
                   'w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
-                  errors[field as keyof MedicineFormValues] && 'border-red-500'
+                  errors[field as keyof CreateMedicineFormValues] && 'border-red-500'
                 )}
               />
-              {errors[field as keyof MedicineFormValues] && (
+              {errors[field as keyof CreateMedicineFormValues] && (
                 <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  {errors[field as keyof MedicineFormValues]?.message as string}
+                  {errors[field as keyof CreateMedicineFormValues]?.message as string}
                 </p>
               )}
             </div>
