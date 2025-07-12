@@ -1,64 +1,89 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { User } from '@/types/user';
 import { UserTable } from './userTable';
 import { AddUserModal } from './addUserModal';
 import { EditUserModal } from './editUserModal';
 import { ConfirmDeactivateModal } from './confirmDeactivateModal';
+import useUserManagement from '@/hooks/useUserManagement';
+import authStore from '@/store/authStore';
+import toast from 'react-hot-toast';
+
+type Role = 'admin' | 'pharmacist' | 'manager';
+const allowedRoles: Role[] = ['admin', 'pharmacist', 'manager'];
 
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: 'John Smith',
-      email: 'john.smith@pharma.com',
-      role: 'Admin',
-      status: 'Active',
-      avatar: '/avatar1.png',
-    },
-    {
-      id: 2,
-      name: 'Sarah Johnson',
-      email: 'sarah.j@pharma.com',
-      role: 'Pharmacist',
-      status: 'Active',
-      avatar: '/avatar2.png',
-    },
-  ]);
-
+  const [users, setUsers] = useState<User[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
+  const [refresh, setRefresh] = useState(false);
 
-  const handleAddUser = (name: string, email: string) => {
-    setUsers((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        name,
-        email,
-        role: 'Pharmacist',
-        status: 'Active',
-        avatar: '/default.png',
-      },
-    ]);
+  const {
+    updateUserByAdmin,
+    deleteUserByAdmin,
+    isLoading,
+    error,
+  } = useUserManagement();
+
+  const fetchUsers = async () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const { userData } = authStore.getState();
+    const token = userData?.tokens?.access?.token;
+
+    if (!apiUrl || !token) {
+      toast.error('Missing API URL or authorization token');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUsers(data?.data || []);
+      } else {
+        toast.error(data?.message || 'Failed to fetch users');
+      }
+    } catch (err) {
+      toast.error('Failed to load users');
+    }
   };
 
-  const handleEditUser = (updated: User) => {
-    setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
-    setEditingUser(null);
+  useEffect(() => {
+    fetchUsers();
+  }, [refresh]);
+
+  const handleEditUser = (updatedUser: User) => {
+    const { _id, fullName, email, role } = updatedUser;
+    // Ensure role is valid
+    const safeRole: Role = allowedRoles.includes(role as Role)
+      ? (role as Role)
+      : 'pharmacist'; // default fallback
+
+    updateUserByAdmin(
+      _id,
+      { fullName, email, role: safeRole },
+      () => {
+        setEditingUser(null);
+        setRefresh((prev) => !prev);
+      }
+    );
   };
 
   const handleDeactivateUser = () => {
-    if (deactivatingUser) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === deactivatingUser.id ? { ...u, status: 'Inactive' } : u
-        )
-      );
+    if (!deactivatingUser) return;
+
+    deleteUserByAdmin(deactivatingUser._id, () => {
       setDeactivatingUser(null);
-    }
+      setRefresh((prev) => !prev);
+    });
   };
 
   return (
@@ -70,11 +95,14 @@ export default function UserManagementPage() {
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded"
+          className="bg-green-600 cursor-pointer text-white px-4 py-2 rounded hover:bg-green-700 transition"
         >
           + Add User
         </button>
       </div>
+
+      {isLoading && <p className="text-blue-600 mb-4">Loading...</p>}
+      {/* {error && <p className="text-red-600 mb-4">Error: {error}</p>} */}
 
       <UserTable
         users={users}
@@ -82,14 +110,17 @@ export default function UserManagementPage() {
         onDeactivate={(user) => setDeactivatingUser(user)}
       />
 
-      {/* Add Modal */}
+      {/* Add User Modal */}
+
       <AddUserModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSave={handleAddUser}
+        onClose={() => {
+          setShowAddModal(false);
+          setRefresh((prev) => !prev);
+        }}
       />
 
-      {/* Edit Modal */}
+      {/* Edit User Modal */}
       <EditUserModal
         user={editingUser}
         isOpen={!!editingUser}
@@ -97,7 +128,7 @@ export default function UserManagementPage() {
         onSave={handleEditUser}
       />
 
-      {/* Confirm Deactivate Modal */}
+      {/* Confirm Deactivation Modal */}
       <ConfirmDeactivateModal
         user={deactivatingUser}
         isOpen={!!deactivatingUser}
