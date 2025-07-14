@@ -3,23 +3,24 @@
 import { useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import authStore from '@/store/authStore';
-import { useRouter } from 'next/navigation'; 
-import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface LoginData {
     email: string;
     password: string;
+    rememberMe: boolean; // ⬅️ Added
 }
 
 const useLogin = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const setUserData = authStore((state) => state.setUserData);
-    const router = useRouter(); // Use Next.js router for navigation
+    const router = useRouter();
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    const login = async ({ email, password }: LoginData): Promise<void> => {
+    const login = async ({ email, password, rememberMe }: LoginData): Promise<void> => {
         if (!apiUrl) {
             setError('API URL is not defined.');
             return;
@@ -32,15 +33,15 @@ const useLogin = () => {
             const response = await axios.post(`${apiUrl}/auth/login`, {
                 email,
                 password,
+                rememberMe, // ⬅️ Include in body
             });
 
             const userData = response.data;
 
             if (response.status === 200) {
-                setUserData(userData);
-                // Optionally, you can redirect the user or show a success message
-                toast.success('Login successful!'); // Ensure you have react-hot-toast installed
-                router.push('/dashboard'); // Assuming you have a router instance available
+                setUserData(userData); // this already stores token and user
+                toast.success('Login successful!');
+                window.location.href = '/dashboard'; // Redirect to dashboard
             } else {
                 setError(`Unexpected response status: ${response.status}`);
             }
