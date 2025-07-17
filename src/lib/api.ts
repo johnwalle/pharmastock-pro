@@ -1,35 +1,39 @@
-export class ApiError extends Error {
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
-  }
-}
+// import axios from 'axios';
 
-export async function apiRequest<T = any>(
-  url: string,
-  options?: RequestInit
-): Promise<{ data: T | null; status: number; error: string | null }> {
-  const response = await fetch(url, options);
-  const data = await response.json();
+// let accessToken = null;
 
-  if (!response.ok) {
-    let message: string;
+// const api = axios.create({
+//   baseURL: 'http://localhost:4000/api',
+//   withCredentials: true,
+// });
 
-    switch (response.status) {
-      case 401:
-        message = 'Invalid credentials';
-        break;
-      case 429:
-        message = data?.error || 'Conflict error';
-        break;
-      default:
-        message = data?.message || 'Something went wrong';
-        break;
-    }
+// api.interceptors.request.use(async (config) => {
+//   if (accessToken) {
+//     config.headers['Authorization'] = `Bearer ${accessToken}`;
+//   }
+//   return config;
+// });
 
-    return { data: null, status: response.status, error: message };
-  }
+// api.interceptors.response.use(
+//   (response) => response,
+//   async (error) => {
+//     if (error.response.status === 401 && !error.config._retry) {
+//       error.config._retry = true;
+//       try {
+//         const res = await axios.post('http://localhost:4000/api/refresh-token', {}, { withCredentials: true });
+//         accessToken = res.data.accessToken;
+//         error.config.headers['Authorization'] = `Bearer ${accessToken}`;
+//         return api(error.config);
+//       } catch (e) {
+//         window.location.href = '/login';
+//       }
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 
-  return { data, status: response.status, error: null };
-}
+// export const setAccessToken = (token) => {
+//   accessToken = token;
+// };
+
+// export default api;
