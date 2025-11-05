@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
+import authStore from '@/store/authStore';
+import { useRouter } from 'next/navigation'; // Ensure you have next/navigation installed
 import {
   Home,
   Pill,
@@ -25,6 +27,17 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeComponent }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const clearUserData = authStore((state) => state.clearUserData);
+  const router = useRouter(); // Use Next.js router for navigation
+
+  //logout handler
+  const logoutHandler = () => {
+    // Implement your logout logic here
+    clearUserData();
+    router.push('/auth/signup'); // Redirect to login page after logout
+  };
+
+
 
   const menuItems = [
     { name: 'Dashboard', component: 'Dashboard', icon: Home, visible: true },
@@ -33,12 +46,6 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
       component: 'MedicineManagement',
       icon: Pill,
       visible: ['admin', 'pharmacist'].includes(userRole),
-    },
-    {
-      name: 'Stock Monitoring',
-      component: 'StockMonitoring',
-      icon: Package,
-      visible: true,
     },
     {
       name: 'Search & Filter',
@@ -95,8 +102,12 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
       <div className="flex items-center justify-between p-4 border-b border-blue-700">
         {!isCollapsed && (
           <div className="flex items-center space-x-2">
-            <img src="/logo.png" alt="Pharmacy Logo" className="h-8 w-8" />
-            <span className="text-lg font-semibold tracking-wide">PharmaStock</span>
+            <span className="p-1 rounded bg-[#0052CC] text-white font-semibold">
+              🏥
+            </span>
+            <span className="text-lg font-semibold tracking-wide text-gray-300">
+              Yenewub
+            </span>
           </div>
         )}
         <button
@@ -105,9 +116,9 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
           aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {isCollapsed ? (
-            <ChevronRight className="h-5 w-5 text-white" />
+            <ChevronRight className="h-5 w-5 cursor-pointer text-white" />
           ) : (
-            <ChevronLeft className="h-5 w-5 text-white" />
+            <ChevronLeft className="h-5 w-5 cursor-pointer text-white" />
           )}
         </button>
       </div>
@@ -122,8 +133,8 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
                 <button
                   onClick={() => onSelectComponent(item.component)}
                   className={`flex items-center p-3 rounded-lg w-full text-left ${activeComponent === item.component
-                      ? 'bg-white/10 text-white font-medium'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    ? 'bg-white/10 text-white font-medium'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white'
                     } transition-all duration-200 ${isCollapsed ? 'justify-center' : 'space-x-3'
                     }`}
                   aria-label={item.name}
@@ -139,17 +150,23 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onSelectComponent, activeCo
       </nav>
 
       {/* Logout */}
-      <div className="p-2 border-t border-blue-700">
+      <div className="px-4 pt-2 border-t border-blue-800/50">
         <button
-          onClick={() => onSelectComponent('Logout')}
-          className={`flex items-center p-3 rounded-lg w-full text-left text-white/80 hover:bg-red-500 hover:text-white transition-colors duration-200 ${isCollapsed ? 'justify-center' : 'space-x-3'
-            }`}
+          onClick={logoutHandler}
+          className={`group cursor-pointer flex items-center w-full gap-3 rounded-xl px-4 py-3 transition duration-200 
+      bg-transparent text-white/80 hover:bg-red-600 hover:text-white
+      ${isCollapsed ? 'justify-center px-3' : ''}`}
           aria-label="Logout"
         >
-          <LogOut className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : ''}`} />
-          {!isCollapsed && <span className="text-sm tracking-wide">Logout</span>}
+          <LogOut
+            className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${isCollapsed ? 'mx-auto' : ''}`}
+          />
+          {!isCollapsed && (
+            <span className="text-sm font-medium tracking-wide">Logout</span>
+          )}
         </button>
       </div>
+
     </aside>
 
   );

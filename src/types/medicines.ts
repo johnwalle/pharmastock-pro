@@ -15,7 +15,7 @@ export interface Medicine {
   prescriptionStatus: string; // Prescription, OTC, or Controlled Substance
   pricePerUnit: number; // Cost per unit (e.g., 0.50)
   receivedDate: string; // Date stock was received (ISO format, e.g., 2025-07-08)
-  status: 'active' | 'inactive' | 'discontinued' | 'out-of-stock'; // Current status of the medicine
+  status: 'available' | 'low-stock' | 'out-of-stock'; // Current status of the medicine
   imageURL?: string; // URL to an image of the medicine (optional)
   notes?: string; // Additional notes or special instructions (optional)
 }

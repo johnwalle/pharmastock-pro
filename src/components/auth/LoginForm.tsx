@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { HiExclamationCircle } from 'react-icons/hi';
 import { useRouter } from 'next/navigation';
-import useLogin from '@/hooks/useLogin'; // Assuming correct path
+import useLogin from '@/hooks/useLogin';
 
 const LoginForm: React.FC = () => {
   const { login, isLoading, error } = useLogin();
   const router = useRouter();
+  const [rememberMe, setRememberMe] = useState(false); // ⬅️ Added state
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,9 +18,8 @@ const LoginForm: React.FC = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    await login({ email, password });
+    await login({ email, password, rememberMe }); // ⬅️ Pass rememberMe
 
-    // On successful login, error will be null and userData should be set
     if (!error) {
       router.push('/dashboard');
     }
@@ -51,7 +51,13 @@ const LoginForm: React.FC = () => {
 
       <div className="flex items-center justify-between text-sm text-gray-600">
         <label className="flex items-center">
-          <input type="checkbox" className="mr-2" /> Remember me
+          <input
+            type="checkbox"
+            className="mr-2"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)} // ⬅️ Track checkbox
+          />
+          Remember me
         </label>
         <a href="/auth/forgot-password" className="hover:underline">
           Forgot password?

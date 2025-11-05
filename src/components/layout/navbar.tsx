@@ -61,15 +61,24 @@ const Navbar = () => {
                         >
                             Demo
                         </Link>
-                        <Link
-                            href="/api/auth/signup"
+                        <button
+                            onClick={() => window.location.href = "/auth/signup"}
+                            className={`ml-4 px-5 py-2.5 rounded-xl text-sm font-semibold transition duration-300 shadow-sm cursor-pointer ${scrolled
+                                ? 'bg-white text-primary hover:bg-gray-100'
+                                : 'bg-primary text-white hover:bg-blue-700'
+                                }`}
+                        >
+                            Start Free Trial
+                        </button>
+                        {/* <Link
+                            href="/auth/signup"
                             className={`ml-4 px-5 py-2.5 rounded-xl text-sm font-semibold transition duration-300 shadow-sm cursor-pointer ${scrolled
                                     ? 'bg-white text-primary hover:bg-gray-100'
                                     : 'bg-primary text-white hover:bg-blue-700'
                                 }`}
                         >
                             Start Free Trial
-                        </Link>
+                        </Link> */}
                     </nav>
 
                     {/* Mobile Menu Button */}
@@ -100,10 +109,10 @@ const Navbar = () => {
                             Demo
                         </Link>
                         <Link
-                            href="/auth/trial"
+                            href="/auth/signup"
                             className={`mt-2 py-2 text-center rounded-md font-semibold text-sm transition cursor-pointer ${scrolled
-                                    ? 'bg-white text-primary hover:bg-gray-100'
-                                    : 'bg-primary text-white hover:bg-blue-700'
+                                ? 'bg-white text-primary hover:bg-gray-100'
+                                : 'bg-primary text-white hover:bg-blue-700'
                                 }`}
                         >
                             Start Free Trial

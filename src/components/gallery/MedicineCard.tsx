@@ -9,11 +9,11 @@ interface Props {
 export default function MedicineCard({ medicine, onClick }: Props) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
+      case 'available':
         return 'bg-green-100 text-green-700';
-      case 'inactive':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'discontinued':
+      case 'low-stock':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'expired':
         return 'bg-gray-200 text-gray-600';
       case 'out-of-stock':
         return 'bg-red-100 text-red-700';
@@ -21,6 +21,8 @@ export default function MedicineCard({ medicine, onClick }: Props) {
         return 'bg-gray-100 text-gray-600';
     }
   };
+
+  const formattedDate = new Date(medicine.expiryDate).toLocaleDateString();
 
   return (
     <div
@@ -38,17 +40,17 @@ export default function MedicineCard({ medicine, onClick }: Props) {
       </div>
 
       {/* Info Section */}
-      <div className="p-4 space-y-1">
+      <div className="p-4 space-y-2">
         <div className="flex justify-between items-start">
           <h2 className="text-lg font-semibold text-gray-800 truncate">
             {medicine.brandName}
           </h2>
           <span
-            className={`text-xs font-medium px-2 py-1 rounded ${getStatusColor(
+            className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusColor(
               medicine.status
             )}`}
           >
-            {medicine.status}
+            {medicine.status.replace('-', ' ')}
           </span>
         </div>
 
@@ -65,7 +67,7 @@ export default function MedicineCard({ medicine, onClick }: Props) {
             <span className="font-medium">Qty:</span> {medicine.currentStockLevel}
           </div>
           <div>
-            <span className="font-medium">Exp:</span> {medicine.expiryDate}
+            <span className="font-medium">Exp:</span> {formattedDate}
           </div>
         </div>
       </div>

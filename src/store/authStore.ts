@@ -2,14 +2,26 @@
 
 import { create } from 'zustand';
 
-interface Tokens {
-  access: {
-    token: string;
-    expires: string;
-  };
+// --------------------
+// Types
+// --------------------
+interface AccessToken {
+  token: string;
+  expires: string;
 }
 
-interface UserData {
+interface RefreshToken {
+  token: string;
+  expires: string;
+}
+
+interface Tokens {
+  access: AccessToken;
+  refresh?: RefreshToken;
+  rememberMe: boolean;
+}
+
+interface User {
   _id: string;
   email: string;
   fullName: string;
@@ -17,6 +29,10 @@ interface UserData {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+interface UserData {
+  user: User;
   tokens: Tokens;
 }
 
@@ -24,19 +40,29 @@ interface AuthState {
   userData: UserData | null;
   setUserData: (userData: UserData) => void;
   clearUserData: () => void;
-  updateAccessToken: (accessToken: Tokens['access']) => void;
+  updateAccessToken: (accessToken: AccessToken) => void;
 }
 
-// Utility: Set cookie
-function setCookie(name: string, value: string, days: number) {
-  const date = new Date();
-  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-  const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `${name}=${encodeURIComponent(value)};${expires};path=/`;
+// --------------------
+// Cookie Utils
+// --------------------
+function isClient() {
+  return typeof window !== 'undefined' && typeof document !== 'undefined';
 }
 
-// Utility: Get cookie
+function setCookie(name: string, value: string, days?: number) {
+  if (!isClient()) return;
+  let cookieStr = `${name}=${encodeURIComponent(value)};path=/;`;
+  if (days !== undefined) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    cookieStr += `expires=${date.toUTCString()};`;
+  }
+  document.cookie = cookieStr;
+}
+
 function getCookie(name: string): string {
+  if (!isClient()) return '';
   const nameEQ = `${name}=`;
   const cookies = decodeURIComponent(document.cookie).split(';');
   for (let c of cookies) {
@@ -48,8 +74,12 @@ function getCookie(name: string): string {
   return '';
 }
 
+// --------------------
+// Store
+// --------------------
 const authStore = create<AuthState>((set, get) => ({
   userData: (() => {
+    if (!isClient()) return null;
     try {
       const raw = getCookie('userData');
       return raw ? (JSON.parse(raw) as UserData) : null;
@@ -60,42 +90,52 @@ const authStore = create<AuthState>((set, get) => ({
   })(),
 
   setUserData: (userData) => {
-    // Only store access token on client side
-    const minimalUserData = {
-      ...userData,
-      tokens: {
-        access: userData.tokens.access
-      },
-    };
+    const rememberMe = userData.tokens.rememberMe;
 
-    set({ userData: minimalUserData });
-    setCookie('userData', JSON.stringify(minimalUserData), 7);
-    setCookie('accessToken', userData.tokens.access.token, 7); // for middleware
-    console.log('User data set:', minimalUserData);
+    set({ userData });
+
+    const accessExpires = new Date(userData.tokens.access.expires);
+    const msUntilExpiry = accessExpires.getTime() - Date.now();
+    const cookieDays = Math.max(1, Math.round(msUntilExpiry / (1000 * 60 * 60 * 24)));
+
+    setCookie('userData', JSON.stringify(userData), rememberMe ? cookieDays : undefined);
+    setCookie('accessToken', userData.tokens.access.token, rememberMe ? cookieDays : undefined);
+    setCookie('rememberMe', rememberMe ? '1' : '0', rememberMe ? cookieDays : undefined);
+
+    console.log('[authStore] ✅ setUserData:', userData);
   },
 
   clearUserData: () => {
     set({ userData: null });
-    setCookie('userData', '', -1);       // delete cookie
-    setCookie('accessToken', '', -1);    // delete accessToken
-    console.log('User data cleared');
+    setCookie('userData', '', -1);
+    setCookie('accessToken', '', -1);
+    setCookie('rememberMe', '', -1);
+    console.log('[authStore] 🔒 Cleared user data');
   },
 
-  updateAccessToken: (newAccessToken) => {
+  updateAccessToken: (accessToken) => {
     const current = get().userData;
     if (!current) return;
 
-    const updated = {
+    const updated: UserData = {
       ...current,
       tokens: {
-        access: newAccessToken
+        ...current.tokens,
+        access: accessToken,
       },
     };
 
     set({ userData: updated });
-    setCookie('userData', JSON.stringify(updated), 7);
-    setCookie('accessToken', newAccessToken.token, 7);
-    console.log('Access token updated:', newAccessToken);
+
+    const rememberMe = current.tokens.rememberMe;
+    const accessExpires = new Date(accessToken.expires);
+    const msUntilExpiry = accessExpires.getTime() - Date.now();
+    const cookieDays = Math.max(1, Math.round(msUntilExpiry / (1000 * 60 * 60 * 24)));
+
+    setCookie('userData', JSON.stringify(updated), rememberMe ? cookieDays : undefined);
+    setCookie('accessToken', accessToken.token, rememberMe ? cookieDays : undefined);
+
+    console.log('[authStore] 🔄 Access token updated:', accessToken);
   },
 }));
 

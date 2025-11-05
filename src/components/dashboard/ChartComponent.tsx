@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import {
   BarChart,
   Bar,
@@ -8,110 +9,87 @@ import {
   Pie,
   Cell,
   Tooltip,
-  LineChart,
-  Line,
-  CartesianGrid,
   ResponsiveContainer,
   Legend,
-} from "recharts";
+} from 'recharts';
+import { Charts } from '@/types/dashboard';
 
-const topUsedData = [
-  { name: "Paracetamol", count: 450 },
-  { name: "Amoxicillin", count: 320 },
-  { name: "Ibuprofen", count: 280 },
-  { name: "Aspirin", count: 240 },
-  { name: "Metformin", count: 200 },
-];
+type ChartComponentProps = {
+  charts?: Charts;
+};
 
-const stockStatusData = [
-  { name: "In Stock", value: 60 },
-  { name: "Low Stock", value: 25 },
-  { name: "Out of Stock", value: 15 },
-];
+const COLORS = ['#00BFA6', '#FFBB28', '#FF4D4F']; // pharmacy-friendly green, yellow, red
 
-const expiryTrendsData = [
-  { month: "Jan", items: 30 },
-  { month: "Feb", items: 25 },
-  { month: "Mar", items: 40 },
-  { month: "Apr", items: 35 },
-  { month: "May", items: 45 },
-  { month: "Jun", items: 38 },
-];
+const ChartComponent = ({ charts }: ChartComponentProps) => {
+  if (!charts) {
+    return <div className="text-center text-gray-500 p-4">No chart data available</div>;
+  }
 
-const COLORS = ["#00C49F", "#FFBB28", "#FF4D4F"];
+  const topUsedMedicines = charts.topUsedMedicines || [];
 
-const AnalyticsInsights = () => {
+  const stockStatus = Array.isArray(charts.stockStatus)
+    ? charts.stockStatus
+    : Object.entries(charts.stockStatus || {}).map(([name, value]) => ({
+        name,
+        value,
+      }));
+
   return (
-    <section className="bg-gray-50 py-12 md:px-8 lg:px-16">
+    <section className="bg-[#f5faff] py-12 px-6 md:px-12 lg:px-20">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
           Analytics & Insights
         </h2>
-        <p className="text-gray-600 mb-8">
-          Visual representation of your inventory data
+        <p className="text-gray-600 mb-8 text-sm md:text-base">
+          Visual representation of your inventory and stock data
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Top Used Medicines */}
-          <div className="bg-white rounded-xl border p-4 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+            <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
               Top Used Medicines
             </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={topUsedData}>
-                <XAxis dataKey="name" />
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={topUsedMedicines}>
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="count" fill="#2D4DB6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" fill="#2D4DB6" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Stock Status */}
-          <div className="bg-white rounded-xl border p-4 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+            <h3 className="text-lg md:text-xl font-semibold text-gray-800 mb-4">
               Stock Status
             </h3>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={stockStatusData}
+                  data={stockStatus}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
-                  cy="50%"
-                  outerRadius={70}
-                  label
+                  cy="45%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {stockStatusData.map((entry, index) => (
+                  {stockStatus.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Legend verticalAlign="bottom" height={36} />
                 <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Expiry Trends */}
-          <div className="bg-white rounded-xl border p-4 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Expiry Trends
-            </h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={expiryTrendsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="items"
-                  stroke="#1D4ED8"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
+                <Legend
+                  verticalAlign="bottom"
+                  iconType="circle"
+                  layout="horizontal"
+                  wrapperStyle={{ marginTop: 16 }}
                 />
-              </LineChart>
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -120,4 +98,4 @@ const AnalyticsInsights = () => {
   );
 };
 
-export default AnalyticsInsights;
+export default ChartComponent;

@@ -1,10 +1,10 @@
-export type ActionType = 'Add' | 'Edit' | 'Delete' | 'View';
+// types/auditLog.ts
 
 export interface AuditLogEntry {
-  id: number;
-  user: string;
-  avatar: string;
-  action: ActionType;
-  timestamp: string;
+  _id: string;
+  userId: string;
+  userName: string;
+  action: 'Add' | 'Edit' | 'Delete' | 'Sold';
   details: string;
+  timestamp: string;
 }

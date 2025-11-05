@@ -1,60 +1,52 @@
+// pages/index.tsx
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import { useState } from 'react';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import DashboardOverview from './DashboardOverview';
-import QuickActions from './QuickActionButton';
 import ChartComponent from './ChartComponent';
-import Header from './Header'
-import { DashboardData } from '@/types/dashboard';
+import Header from './Header';
 
 const Home: NextPage = () => {
-  // Sample data (replace with API call in production)
-  const dashboardData: DashboardData = {
-    pharmacyOverview: {
-      totalMedicines: 2847,
-      lowStockAlerts: 23,
-      expiredMedicines: 156,
-    },
-    charts: {
-      topUsedMedicines: [50, 45, 30, 25, 20],
-      stockStatus: { inStock: 70, lowStock: 20, outOfStock: 10 },
-      expiryTrends: [10, 15, 20, 25, 30],
-    },
-  };
+  const { data, loading, error } = useDashboardData();
 
-  // Error handling state
-  const [error, setError] = useState<string | null>(null);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600 text-lg">Loading dashboard...</p>
+      </div>
+    );
+  }
 
-  if (error) {
-    return <div className="text-red-500 text-center p-4">Error: {error}</div>;
+  if (error || !data) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-red-500 text-lg">Error loading dashboard: {error}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-[#f5faff]">
       <Head>
-        <title>PharmStock Dashboard</title>
-        <meta name="description" content="Pharmacy management dashboard" />
+        <title>Yenewub Pharmacy Dashboard</title>
+        <meta name="description" content="Internal dashboard for Yenewub Pharmacy management" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <header >
-        <Header />
-      </header>
+      {/* Header */}
+      <Header />
 
-      <main>
-        <DashboardOverview />
+      {/* Main Content */}
+      <main className="px-4 md:px-8 lg:px-16 py-6 space-y-12">
+        {/* Dashboard Overview */}
+        <DashboardOverview overview={data.pharmacyOverview} />
+
+        {/* Charts & Analytics */}
+        <ChartComponent charts={data.charts} />
+
+        {/* Quick Actions or additional internal features */}
+        {/* <QuickActions /> */}
       </main>
-
-      <main>
-        <ChartComponent />
-      </main>
-
-      <footer className="mt-6">
-        <main>
-          <QuickActions />
-        </main>
-        <p className="text-center text-gray-500 mt-4">© 2025 PharmStock System. All rights reserved.</p>
-      </footer>
     </div>
   );
 };

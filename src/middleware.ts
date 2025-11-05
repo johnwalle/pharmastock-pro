@@ -1,31 +1,30 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// List of routes that require authentication
+// Define routes that require authentication
 const PROTECTED_ROUTES = ['/dashboard', '/profile', '/inventory'];
 
 function isProtectedRoute(pathname: string) {
-  return PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
+  return PROTECTED_ROUTES.some(route => pathname.startsWith(route));
 }
 
 export function middleware(request: NextRequest) {
-  // Check for accessToken cookie instead of authToken
-  const accessToken = request.cookies.get('accessToken')?.value;
   const { pathname } = request.nextUrl;
 
-  if (isProtectedRoute(pathname)) {
-    if (!accessToken) {
-      const loginUrl = new URL('/auth/signup', request.url);
-      loginUrl.searchParams.set('redirect', pathname); // optional: return after login
-      return NextResponse.redirect(loginUrl);
-    }
+  // Read access token from cookies
+  const accessToken = request.cookies.get('accessToken')?.value;
+
+  // If trying to access a protected route without an access token, redirect to /auth/signup
+  if (isProtectedRoute(pathname) && !accessToken) {
+    const redirectUrl = new URL('/auth/signup', request.url);
+    redirectUrl.searchParams.set('redirect', pathname); // Optional: redirect after login
+    return NextResponse.redirect(redirectUrl);
   }
 
-  return NextResponse.next();
+  return NextResponse.next(); // Allow request
 }
 
+// Apply middleware only on these routes
 export const config = {
   matcher: ['/dashboard/:path*', '/profile/:path*', '/inventory/:path*'],
 };
