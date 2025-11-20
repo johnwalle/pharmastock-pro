@@ -1,73 +1,117 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import clsx from 'clsx';
+import { AlertCircle, Lock } from 'lucide-react';
+
 import {
   updateMedicineSchema,
   UpdateMedicineFormValues,
+  predefinedUnitTypesList,
 } from '@/validators/medicineSchema';
+import { Medicine } from '@/types/medicines';
 import { UploadDropzone } from './uploadDropzone';
-import { Lock, AlertCircle } from 'lucide-react';
-import useUpdateMedicine from '@/hooks/useUpdateMedicine';
-import clsx from 'clsx';
 import { urlToFile } from '@/lib/urlToFile';
 
 interface EditMedicineFormProps {
-  medicine: UpdateMedicineFormValues & { _id: string; image?: string };
+  medicine: Medicine;
   onClose: () => void;
+  onSubmitForm: (formData: FormData) => Promise<void>; // passed from modal
+  isLoading?: boolean; // optional loading prop
 }
 
 export default function EditMedicineForm({
   medicine,
   onClose,
+  onSubmitForm,
+  isLoading = false,
 }: EditMedicineFormProps) {
+  const [customUnit, setCustomUnit] = useState('');
+  const [selectedImage, setSelectedImage] = useState<File | undefined>(undefined);
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<UpdateMedicineFormValues>({
     resolver: zodResolver(updateMedicineSchema),
-    defaultValues: medicine,
+    defaultValues: {
+      ...medicine,
+      customUnitType:
+        medicine.unitType && !predefinedUnitTypesList.includes(medicine.unitType)
+          ? medicine.unitType
+          : '',
+    },
   });
 
-  const selectedImage = watch('image') as File | undefined;
-  const { updateMedicine, isLoading, error } = useUpdateMedicine();
+  const selectedUnitType = watch('unitType');
 
-  // 🔄 Load image URL as File
+  // Load initial data and image file
   useEffect(() => {
-    reset(medicine);
+    reset({
+      ...medicine,
+      customUnitType:
+        medicine.unitType && !predefinedUnitTypesList.includes(medicine.unitType)
+          ? medicine.unitType
+          : '',
+    });
 
-    if (medicine.image && typeof medicine.image === 'string') {
-      const filename =
-        medicine.brandName.replace(/\s+/g, '_') + '_image.jpg';
-
-      urlToFile(medicine.image, filename).then((file) => {
+    if (medicine.imageURL) {
+      const filename = medicine.brandName.replace(/\s+/g, '_') + '_image.jpg';
+      urlToFile(medicine.imageURL, filename).then((file) => {
         setValue('image', file, { shouldValidate: true });
+        setSelectedImage(file);
       });
     }
   }, [medicine, reset, setValue]);
 
   const onSubmit = async (data: UpdateMedicineFormValues) => {
     try {
+      const finalUnitType =
+        data.unitType === 'other' ? data.customUnitType?.trim() : data.unitType;
+
       const formData = new FormData();
 
-      for (const [key, value] of Object.entries(data)) {
-        if (key === 'image' && value instanceof File) {
-          formData.append(key, value);
-        } else {
-          formData.append(key, String(value ?? ''));
-        }
+      // Strings
+      formData.append('brandName', data.brandName);
+      formData.append('genericName', data.genericName);
+      formData.append('strength', data.strength);
+      formData.append('batchNumber', data.batchNumber);
+      formData.append('supplierInfo', data.supplierInfo || '');
+      formData.append('storageConditions', data.storageConditions || '');
+      formData.append('notes', data.notes || '');
+
+      // Numbers
+      formData.append('unitQuantity', String(data.unitQuantity));
+      formData.append('subUnitQuantity', String(data.subUnitQuantity || ''));
+      formData.append('purchaseCost', String(data.purchaseCost));
+      formData.append('sellingPrice', String(data.sellingPrice));
+      formData.append('reorderThreshold', String(data.reorderThreshold));
+      formData.append('reorderQuantity', String(data.reorderQuantity));
+
+      // Selects
+      formData.append('dosageForm', data.dosageForm);
+      formData.append('unitType', finalUnitType || '');
+      formData.append('prescriptionStatus', data.prescriptionStatus);
+
+      // Dates
+      formData.append('receivedDate', data.receivedDate);
+      formData.append('expiryDate', data.expiryDate);
+
+      // Image (only if selected)
+      if (data.image instanceof File) {
+        formData.append('image', data.image);
       }
 
-      await updateMedicine(medicine._id, formData, () => {
-        onClose();
-      });
+      // Call parent modal submit handler
+      await onSubmitForm(formData);
     } catch (err) {
-      console.error('Update error:', err);
+      console.error('Form submission error:', err);
     }
   };
 
@@ -81,54 +125,38 @@ export default function EditMedicineForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Text Inputs */}
-          {[
-            { name: 'brandName', label: 'Brand Name *', placeholder: 'Enter brand name' },
-            { name: 'genericName', label: 'Generic Name *', placeholder: 'Enter generic name' },
-            { name: 'strength', label: 'Strength *', placeholder: 'e.g., 500 mg' },
-            { name: 'batchNumber', label: 'Batch Number *', placeholder: 'e.g., BAT001' },
-            { name: 'supplierInfo', label: 'Supplier Info', placeholder: 'Supplier name and contact' },
-            { name: 'storageConditions', label: 'Storage Conditions', placeholder: 'e.g., Store at 15-25°C' },
-          ].map((field) => (
-            <div key={field.name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          {['brandName','genericName','strength','batchNumber','supplierInfo','storageConditions'].map(field => (
+            <div key={field}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{field}</label>
               <input
-                {...register(field.name as keyof UpdateMedicineFormValues)}
-                placeholder={field.placeholder}
-                className={clsx(
-                  'w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
-                  errors[field.name as keyof UpdateMedicineFormValues] && 'border-red-500'
-                )}
+                {...register(field as keyof UpdateMedicineFormValues)}
+                className={clsx('w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
+                  errors[field as keyof UpdateMedicineFormValues] && 'border-red-500')}
               />
-              {errors[field.name as keyof UpdateMedicineFormValues] && (
+              {errors[field as keyof UpdateMedicineFormValues] && (
                 <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  {errors[field.name as keyof UpdateMedicineFormValues]?.message as string}
+                  {String(errors[field as keyof UpdateMedicineFormValues]?.message)}
                 </p>
               )}
             </div>
           ))}
 
           {/* Number Inputs */}
-          {[
-            { name: 'currentStockLevel', label: 'Current Stock Level *' },
-            { name: 'reorderThreshold', label: 'Reorder Threshold' },
-            { name: 'reorderQuantity', label: 'Reorder Quantity' },
-          ].map((field) => (
-            <div key={field.name}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+          {['unitQuantity','subUnitQuantity','purchaseCost','sellingPrice','reorderThreshold','reorderQuantity'].map(field => (
+            <div key={field}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{field}</label>
               <input
                 type="number"
-                min={0}
-                {...register(field.name as keyof UpdateMedicineFormValues)}
-                className={clsx(
-                  'w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
-                  errors[field.name as keyof UpdateMedicineFormValues] && 'border-red-500'
-                )}
+                step={field.includes('Price') || field.includes('Cost') ? 0.01 : 1}
+                {...register(field as keyof UpdateMedicineFormValues)}
+                className={clsx('w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
+                  errors[field as keyof UpdateMedicineFormValues] && 'border-red-500')}
               />
-              {errors[field.name as keyof UpdateMedicineFormValues] && (
+              {errors[field as keyof UpdateMedicineFormValues] && (
                 <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  {errors[field.name as keyof UpdateMedicineFormValues]?.message as string}
+                  {String(errors[field as keyof UpdateMedicineFormValues]?.message)}
                 </p>
               )}
             </div>
@@ -139,21 +167,51 @@ export default function EditMedicineForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">Dosage Form *</label>
             <select
               {...register('dosageForm')}
-              className={clsx(
-                'w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
-                errors.dosageForm && 'border-red-500'
-              )}
+              className={clsx('w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
+                errors.dosageForm && 'border-red-500')}
             >
               <option value="">Select dosage form</option>
-              {['Tablet', 'Capsule', 'Syrup', 'Injection', 'Cream', 'Inhaler'].map((opt) => (
+              {['Tablet','Capsule','Syrup','Injection','Cream','Inhaler','Other'].map(opt => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
-            {errors.dosageForm && (
-              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                {errors.dosageForm.message}
-              </p>
+          </div>
+
+          {/* Unit Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Type *</label>
+            <select
+              {...register('unitType')}
+              className={clsx('w-full border rounded-md px-3 py-2 text-sm',
+                errors.unitType && 'border-red-500')}
+              onChange={e => {
+                const val = e.target.value;
+                setValue('unitType', val);
+                if (val !== 'other') {
+                  setCustomUnit('');
+                  setValue('customUnitType', '');
+                }
+              }}
+            >
+              <option value="">Select unit type</option>
+              {predefinedUnitTypesList.map(unit => (
+                <option key={unit} value={unit}>{unit}</option>
+              ))}
+              <option value="other">Other</option>
+            </select>
+
+            {selectedUnitType === 'other' && (
+              <input
+                type="text"
+                {...register('customUnitType')}
+                value={customUnit}
+                onChange={e => {
+                  setCustomUnit(e.target.value);
+                  setValue('customUnitType', e.target.value);
+                }}
+                placeholder="Enter custom unit type"
+                className="mt-2 w-full border rounded-md px-3 py-2 text-sm"
+              />
             )}
           </div>
 
@@ -162,117 +220,65 @@ export default function EditMedicineForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">Prescription Status *</label>
             <select
               {...register('prescriptionStatus')}
-              className={clsx(
-                'w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
-                errors.prescriptionStatus && 'border-red-500'
-              )}
+              className={clsx('w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
+                errors.prescriptionStatus && 'border-red-500')}
             >
               <option value="">Select status</option>
               <option value="Prescription">Prescription</option>
-              <option value="OTC">Over-the-Counter</option>
-              <option value="Controlled">Controlled Substance</option>
+              <option value="OTC">OTC</option>
+              <option value="Controlled">Controlled</option>
             </select>
-            {errors.prescriptionStatus && (
-              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                {errors.prescriptionStatus.message}
-              </p>
-            )}
           </div>
 
-          {/* Date Fields */}
-          {['receivedDate', 'expiryDate'].map((field) => (
+          {/* Dates */}
+          {['receivedDate','expiryDate'].map(field => (
             <div key={field}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {field === 'receivedDate' ? 'Received Date *' : 'Expiry Date *'}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{field}</label>
               <input
                 type="date"
                 {...register(field as keyof UpdateMedicineFormValues)}
-                className={clsx(
-                  'w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
-                  errors[field as keyof UpdateMedicineFormValues] && 'border-red-500'
-                )}
+                className="w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200"
               />
-              {errors[field as keyof UpdateMedicineFormValues] && (
-                <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors[field as keyof UpdateMedicineFormValues]?.message as string}
-                </p>
-              )}
             </div>
           ))}
 
-          {/* Price Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit *</label>
-            <div className="flex items-center border rounded-md px-3 py-2 text-sm">
-              <span className="text-gray-500 pr-1">$</span>
-              <input
-                type="number"
-                step="0.01"
-                {...register('pricePerUnit')}
-                className="w-full outline-none"
-              />
-            </div>
-            {errors.pricePerUnit && (
-              <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                {errors.pricePerUnit.message}
-              </p>
-            )}
+          {/* Image */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Medicine Image</label>
+            <UploadDropzone
+              onFileSelect={file => {
+                if (file) {
+                  setValue('image', file, { shouldValidate: true });
+                  setSelectedImage(file);
+                }
+              }}
+              error={errors.image?.message}
+            />
+            {selectedImage && <p className="text-xs text-green-600 mt-1">Selected: {selectedImage.name}</p>}
           </div>
 
-          {/* Storage Location */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Storage Location</label>
-            <select
-              {...register('storageLocation')}
-              className="w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200"
-            >
-              <option value="">Select location</option>
-              {['Pharmacy Shelf A', 'Pharmacy Shelf B', 'Refrigerator', 'Controlled Storage'].map((opt) => (
-                <option key={opt}>{opt}</option>
-              ))}
-            </select>
+          {/* Notes */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <textarea
+              {...register('notes')}
+              rows={3}
+              className="w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200"
+            />
           </div>
-        </div>
-
-        {/* Upload Section */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Medicine Image</label>
-          <UploadDropzone
-            onFileSelect={(file) => {
-              if (file) setValue('image', file, { shouldValidate: true });
-            }}
-            error={errors.image?.message}
-          />
-          {selectedImage && (
-            <p className="text-xs text-green-600 mt-1">Selected: {selectedImage.name}</p>
-          )}
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-          <textarea
-            rows={3}
-            {...register('notes')}
-            placeholder="Additional notes or special instructions"
-            className="w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200"
-          />
         </div>
 
         {/* Buttons */}
         <div className="flex justify-between items-center pt-4">
           <button
             type="submit"
-            disabled={isLoading}
-            className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50"
+            disabled={isSubmitting || isLoading}
+            className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 flex items-center gap-2 disabled:opacity-50"
           >
             <Lock size={16} />
-            {isLoading ? 'Saving...' : 'Update Medicine'}
+            {isLoading ? 'Updating...' : 'Update Medicine'}
           </button>
+
           <button
             type="button"
             onClick={onClose}

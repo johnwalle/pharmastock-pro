@@ -1,22 +1,33 @@
 export interface KPIData {
-    totalSales: number;
-    soldValue: number;
-    lowStockCount: number;
-    outOfStockCount: number;
+  totalUnitsSold: number;
+  totalRevenue: number;
+  totalProfit: number;
+  lowStockCount: number;
+  outOfStockCount: number;
 }
 
 export interface TrendEntry {
-    _id: string; // formatted date (e.g., "2025-07-16")
-    totalQuantity: number;
+  _id: string; // date string
+  unitsSold: number;
+  revenue: number;
+  profit: number;
 }
 
-export interface TopSeller {
-    brandName: string;
-    quantitySold: number;
+export interface SoldMedicine {
+  brandName: string;
+  genericName: string;
+  batchNumber: string;
+  strength: string;
+  sellingPrice: number;
+  purchaseCost: number;
+  quantitySold: number;
+  profit: number;
+  revenue: number;
+  soldAt: Date;
 }
 
 export interface ReportsResponse {
-    kpis: KPIData;
-    trend: TrendEntry[];
-    topSellers: TopSeller[];
+  kpis: KPIData;
+  trend: TrendEntry[];
+  soldMedicines: SoldMedicine[];
 }

@@ -24,10 +24,15 @@ export default function MedicineCard({ medicine, onClick }: Props) {
 
   const formattedDate = new Date(medicine.expiryDate).toLocaleDateString();
 
+  // Correct total stock
+  const totalStock =
+    (medicine.unitQuantity || 0) +
+    (medicine.stockDispenser || 0);
+
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200 overflow-hidden bg-white group"
+      className="cursor-pointer rounded-xl border border-gray-200 hover:shadow-xl transition-all duration-300 overflow-hidden bg-white group hover:-translate-y-1"
     >
       {/* Image Section */}
       <div className="relative w-full h-48 bg-gray-50">
@@ -40,13 +45,15 @@ export default function MedicineCard({ medicine, onClick }: Props) {
       </div>
 
       {/* Info Section */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-3">
+        {/* Header Row */}
         <div className="flex justify-between items-start">
-          <h2 className="text-lg font-semibold text-gray-800 truncate">
+          <h2 className="text-lg font-bold text-gray-900 leading-tight truncate">
             {medicine.brandName}
           </h2>
+
           <span
-            className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusColor(
+            className={`text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${getStatusColor(
               medicine.status
             )}`}
           >
@@ -54,21 +61,37 @@ export default function MedicineCard({ medicine, onClick }: Props) {
           </span>
         </div>
 
+        {/* Generic */}
         <p className="text-sm text-gray-500 italic truncate">
           {medicine.genericName}
         </p>
 
-        <div className="text-sm text-gray-600">
-          <span className="font-medium">Batch:</span> {medicine.batchNumber}
+        {/* Batch + Price */}
+        <div className="flex justify-between text-sm">
+          <div className="text-gray-600">
+            <span className="font-medium">Batch:</span> {medicine.batchNumber}
+          </div>
+          <div className="font-semibold text-gray-800">
+            ${medicine.sellingPrice.toFixed(2)}
+          </div>
         </div>
 
-        <div className="flex items-center justify-between text-sm text-gray-700">
+        {/* Stock Row */}
+        <div className="flex justify-between items-center text-sm text-gray-700">
           <div>
-            <span className="font-medium">Qty:</span> {medicine.currentStockLevel}
+            <span className="font-medium">Stock:</span> {totalStock} units
           </div>
           <div>
             <span className="font-medium">Exp:</span> {formattedDate}
           </div>
+        </div>
+
+        {/* Units */}
+        <div className="text-xs text-gray-500 mt-1">
+          {medicine.unitQuantity} {medicine.unitType}
+          {medicine.subUnitQuantity
+            ? ` • ${medicine.subUnitQuantity} sub-units`
+            : ''}
         </div>
       </div>
     </div>

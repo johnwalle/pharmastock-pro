@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil, Trash2, ArrowRightCircle } from 'lucide-react'
 
 import StatusBadge from './statusBadge'
 import Pagination from './pagination'
 import DeleteModal from './deleteModal'
 import EditMedicineModal from './editMedicineModal'
-import SellConfirmationModal from '../sell/SellConfirmationModal'
+import MoveToDispenserModal from './MoveToDispenserModal'
 
 import { useMedicineStore } from '@/store/medicineStore'
 import { Medicine } from '@/types/medicines'
@@ -32,7 +32,7 @@ export default function MedicineTable({
   const { medicines, loading, error, fetchMedicines, total } = useMedicineStore()
   const [selectedMedicineId, setSelectedMedicineId] = useState<string | null>(null)
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null)
-  const [selectedSellMedicine, setSelectedSellMedicine] = useState<Medicine | null>(null)
+  const [selectedMoveMedicine, setSelectedMoveMedicine] = useState<Medicine | null>(null)
 
   const perPage = 5
 
@@ -47,35 +47,27 @@ export default function MedicineTable({
     })
   }, [searchQuery, statusFilter, sortBy, order, page])
 
-  const handleDeleteClick = (id: string) => {
-    setSelectedMedicineId(id)
-  }
-
-  const handleEditClick = (medicine: Medicine) => {
-    setSelectedMedicine(medicine)
-  }
-
-  const handleSellClick = (medicine: Medicine) => {
-    setSelectedSellMedicine(medicine)
-  }
-
-  
+  const handleDeleteClick = (id: string) => setSelectedMedicineId(id)
+  const handleEditClick = (medicine: Medicine) => setSelectedMedicine(medicine)
+  const handleMoveClick = (medicine: Medicine) => setSelectedMoveMedicine(medicine)
 
   return (
     <>
-      {/* Table Card */}
-      <div className="mt-6 bg-white border border-gray-200 rounded-xl shadow-sm">
-        {medicines.length === 0 ? (
+      <div className="mt-6 bg-white border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
+        {loading ? (
+          <div className="text-center py-12 text-gray-500 text-sm">Loading medicines...</div>
+        ) : medicines.length === 0 ? (
           <div className="text-center py-12 text-gray-500 text-sm">No medicines found.</div>
         ) : (
           <>
-            <table className="w-full text-sm text-left">
-              <thead className="bg-blue-900 text-white text-xs uppercase hidden sm:table-header-group">
+            <table className="w-full text-sm text-left min-w-[900px]">
+              <thead className="bg-blue-900 text-white text-xs uppercase">
                 <tr>
                   <th className="px-4 py-3">Brand</th>
                   <th className="px-4 py-3 hidden sm:table-cell">Generic</th>
                   <th className="px-4 py-3 hidden md:table-cell">Batch</th>
-                  <th className="px-4 py-3">Stock</th>
+                  <th className="px-4 py-3">Stock Store</th>
+                  <th className="px-4 py-3">Stock Dispenser</th>
                   <th className="px-4 py-3 hidden sm:table-cell">Expiry</th>
                   <th className="px-4 py-3 hidden lg:table-cell">Price/Unit</th>
                   <th className="px-4 py-3">Status</th>
@@ -88,12 +80,13 @@ export default function MedicineTable({
                     <td className="px-4 py-3 font-medium">{med.brandName}</td>
                     <td className="px-4 py-3 hidden sm:table-cell">{med.genericName}</td>
                     <td className="px-4 py-3 hidden md:table-cell">{med.batchNumber}</td>
-                    <td className="px-4 py-3">{med.currentStockLevel}</td>
+                    <td className="px-4 py-3 font-semibold text-blue-700">{med.unitQuantity}</td>
+                    <td className="px-4 py-3 font-semibold text-green-700">{med.stockDispenser}</td>
                     <td className="px-4 py-3 hidden sm:table-cell">
                       {new Date(med.expiryDate).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
-                      ${med.pricePerUnit.toFixed(2)}
+                      ${med.sellingPrice.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={med.status} />
@@ -102,23 +95,24 @@ export default function MedicineTable({
                       <button
                         onClick={() => handleEditClick(med)}
                         title="Edit"
-                        className="text-blue-600 cursor-pointer hover:text-blue-800"
+                        className="text-blue-600 hover:text-blue-800 transition-colors"
                       >
                         <Pencil size={16} />
                       </button>
                       <button
                         onClick={() => handleDeleteClick(med._id)}
                         title="Delete"
-                        className="text-red-600 cursor-pointer hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 transition-colors"
                       >
                         <Trash2 size={16} />
                       </button>
                       <button
-                        onClick={() => handleSellClick(med)}
-                        title="Sell"
-                        className="text-green-600 cursor-pointer hover:text-green-800 px-2 py-1 rounded border border-green-600 hover:border-green-800 text-xs"
+                        onClick={() => handleMoveClick(med)}
+                        title="Move to Dispenser"
+                        className="text-white bg-green-600 hover:bg-green-700 transition-colors px-3 py-1 rounded-md flex items-center gap-1 text-xs"
                       >
-                        Sell
+                        <ArrowRightCircle size={16} />
+                        Move
                       </button>
                     </td>
                   </tr>
@@ -126,38 +120,20 @@ export default function MedicineTable({
               </tbody>
             </table>
 
-            {/* Pagination stays below */}
             <Pagination total={total} page={page} perPage={perPage} onPageChange={setPage} />
           </>
         )}
       </div>
 
-
-
-      {/* Delete Modal */}
+      {/* Modals */}
       {selectedMedicineId && (
-        <DeleteModal
-          medicineId={selectedMedicineId}
-          onClose={() => setSelectedMedicineId(null)}
-        />
+        <DeleteModal medicineId={selectedMedicineId} onClose={() => setSelectedMedicineId(null)} />
       )}
-
-      {/* Edit Modal */}
       {selectedMedicine && (
-        <EditMedicineModal
-          medicine={selectedMedicine}
-          open={!!selectedMedicine}
-          onClose={() => setSelectedMedicine(null)}
-        />
+        <EditMedicineModal medicine={selectedMedicine} open={!!selectedMedicine} onClose={() => setSelectedMedicine(null)} />
       )}
-
-      {/* Sell Confirmation Modal */}
-      {selectedSellMedicine && (
-        <SellConfirmationModal
-          medicine={selectedSellMedicine}
-          open={!!selectedSellMedicine}
-          onClose={() => setSelectedSellMedicine(null)}
-        />
+      {selectedMoveMedicine && (
+        <MoveToDispenserModal medicine={selectedMoveMedicine} open={!!selectedMoveMedicine} onClose={() => setSelectedMoveMedicine(null)} />
       )}
     </>
   )

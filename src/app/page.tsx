@@ -70,7 +70,7 @@ const Hero = () => (
     <div className="relative w-full max-w-lg">
       <div className="relative">
         <img
-          src="https://img.freepik.com/free-vector/online-pharmacy-concept-illustration_114360-7077.jpg?w=740&t=st=1698073082~exp=1698073682~hmac=287935318a7f7cb0280d4c5c034a7a9a8d1a6c58dc593d55b7f4f79f92a3d7a3"
+          src="https://img.freepik.com/free-vector/tiny-pharmacist-with-pills-vitamins-flat-vector-illustration-doctors-writing-prescriptions-antibiotics-working-together-helping-patients-cure-pharmacy-business-drugstore-concept_74855-23225.jpg?t=st=1763110768~exp=1763114368~hmac=1dee888533816e1556690a72901c30611dacf979d274c4bdb16cc45f46e3a9fa&w=1060"
           alt="Pharmacy Illustration"
           className="w-full rounded-xl shadow-lg"
         />

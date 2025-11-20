@@ -28,6 +28,7 @@ const useUpdateMedicine = () => {
     setError(null);
 
     try {
+      console.log("Updating medicine with ID:", medicineId);
       const { userData } = authStore.getState();
       const token = userData?.tokens.access.token;
 

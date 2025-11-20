@@ -1,22 +1,39 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Sidebar from '@/components/layout/sidebar';
-import Dashboard from '@/components/dashboard/dashboard';
-import SearchFilter from '@/components/searchAndFilter/searchAndFilter';
-import MedicineManagement from '@/components/medicines/medicineManagemenet';
-import Reports from '@/components/report/report';
-import ImageGallery from '@/components/gallery/gallery';
-import AuditLog from '@/components/auditLog/auditLog';
-import UserManagement from '@/components/user-management/userManagement';  
+import React, { useState, useEffect } from "react";
+import Sidebar from "@/components/layout/sidebar";
+import Dashboard from "@/components/dashboard/dashboard";
+import SearchFilter from "@/components/searchAndFilter/searchAndFilter";
+import MedicineManagement from "@/components/medicines/medicineManagemenet";
+import Reports from "@/components/report/report";
+import ImageGallery from "@/components/gallery/gallery";
+import AuditLog from "@/components/auditLog/auditLog";
+import UserManagement from "@/components/user-management/userManagement";
+import SellStation from "@/components/SellStation/sellManagement"; 
 
-// Placeholder components for demo
+// Placeholder components
+const Suppliers = () => (
+  <div className="p-4 sm:p-6">
+    <h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1>
+    <p>Manage supplier details.</p>
+  </div>
+);
+const Settings = () => (
+  <div className="p-4 sm:p-6">
+    <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
+    <p>Configure system settings.</p>
+  </div>
+);
+const Logout = () => (
+  <div className="p-4 sm:p-6">
+    <h1 className="text-xl sm:text-2xl font-bold">Logged Out</h1>
+    <p>You have been logged out.</p>
+  </div>
+);
 
 
-const Suppliers = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1><p>Manage supplier details.</p></div>;
-const Settings = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Settings</h1><p>Configure system settings.</p></div>;
-const Logout = () => <div className="p-4 sm:p-6"><h1 className="text-xl sm:text-2xl font-bold">Logged Out</h1><p>You have been logged out.</p></div>;
 
+// Map all components
 const componentMap: Record<string, any> = {
   Dashboard,
   MedicineManagement,
@@ -28,10 +45,11 @@ const componentMap: Record<string, any> = {
   Suppliers,
   Settings,
   Logout,
+  SellStation, // Added Sell Station
 };
 
 const MainLayout: React.FC = () => {
-  const [selectedComponent, setSelectedComponent] = useState('Dashboard');
+  const [selectedComponent, setSelectedComponent] = useState("Dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSelectComponent = (component: string) => {
@@ -42,23 +60,21 @@ const MainLayout: React.FC = () => {
     }
   };
 
-  // Toggle sidebar visibility
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Set initial sidebar state based on screen size
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(true); // Sidebar open by default on desktop
+        setIsSidebarOpen(true);
       } else {
-        setIsSidebarOpen(false); // Sidebar closed by default on mobile/tablet
+        setIsSidebarOpen(false);
       }
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     handleResize();
-    return () => window.removeEventListener('resize', handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const ActiveComponent = componentMap[selectedComponent] || Dashboard;
@@ -68,11 +84,11 @@ const MainLayout: React.FC = () => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:static lg:translate-x-0`}
       >
         <Sidebar
-          userRole="admin" // Example role; pass dynamically based on auth
+          userRole="admin" // Example role
           onSelectComponent={handleSelectComponent}
           activeComponent={selectedComponent}
         />
@@ -116,7 +132,7 @@ const MainLayout: React.FC = () => {
         {/* Main Content */}
         <main
           className={`flex-1 p-4 sm:p-6 transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? 'lg:ml-0' : 'lg:ml-16'
+            isSidebarOpen ? "lg:ml-0" : "lg:ml-16"
           }`}
         >
           <ActiveComponent />

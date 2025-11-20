@@ -27,7 +27,7 @@ const useCreateMedicine = () => {
     try {
       const { userData } = authStore.getState();
       const token = userData?.tokens.access.token;
-      console.log('the token is', token);
+
 
       if (!token) {
         const errMsg = 'No access token available.';

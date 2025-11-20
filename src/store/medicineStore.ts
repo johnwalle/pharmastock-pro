@@ -13,6 +13,7 @@ type MedicineStore = {
 
   fetchMedicines: (query?: Record<string, any>) => Promise<void>;
   deleteMedicine: (id: string) => Promise<void>;
+  moveStockToDispenser: (medicineId: string, quantity: number) => Promise<void>;
   setMedicines: (data: Medicine[]) => void;
 };
 
@@ -27,7 +28,6 @@ export const useMedicineStore = create<MedicineStore>()(
 
     fetchMedicines: async (query = {}) => {
       set({ loading: true, error: null });
-
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const res = await axios.get(`${apiUrl}/medicines`, { params: query });
@@ -47,7 +47,6 @@ export const useMedicineStore = create<MedicineStore>()(
 
     deleteMedicine: async (id: string) => {
       set({ loading: true, error: null });
-
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const { userData } = authStore.getState();
@@ -56,13 +55,10 @@ export const useMedicineStore = create<MedicineStore>()(
         if (!token) throw new Error('Authentication token missing');
 
         await axios.delete(`${apiUrl}/medicines/delete/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const updated = get().medicines.filter((med) => med._id !== id);
-
         set({
           medicines: updated,
           total: get().total - 1,
@@ -72,6 +68,38 @@ export const useMedicineStore = create<MedicineStore>()(
         toast.success('Medicine deleted successfully');
       } catch (err: any) {
         const message = err?.response?.data?.message || err.message || 'Failed to delete medicine';
+        set({ error: message, loading: false });
+        toast.error(`${message}`);
+      }
+    },
+
+    // --- NEW ACTION: MOVE STOCK TO DISPENSER ---
+    moveStockToDispenser: async (medicineId: string, quantity: number) => {
+      set({ loading: true, error: null });
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        const { userData } = authStore.getState();
+        const token = userData?.tokens.access.token;
+
+        if (!token) throw new Error('Authentication token missing');
+
+        const res = await axios.post(
+          `${apiUrl}/medicines/move-to-dispenser/${medicineId}`,
+          { quantity },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const updatedMedicine: Medicine = res.data.data;
+
+        // Update local store
+        const updatedMedicines = get().medicines.map((med) =>
+          med._id === medicineId ? updatedMedicine : med
+        );
+
+        set({ medicines: updatedMedicines, loading: false });
+        toast.success(`Moved ${quantity} units to dispenser successfully`);
+      } catch (err: any) {
+        const message = err?.response?.data?.message || err.message || 'Failed to move stock';
         set({ error: message, loading: false });
         toast.error(`${message}`);
       }
