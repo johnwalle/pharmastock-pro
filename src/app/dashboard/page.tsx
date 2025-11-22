@@ -10,6 +10,7 @@ import ImageGallery from "@/components/gallery/gallery";
 import AuditLog from "@/components/auditLog/auditLog";
 import UserManagement from "@/components/user-management/userManagement";
 import SellStation from "@/components/SellStation/sellManagement"; 
+import NotificationCenter from "@/components/notifications/notificationCenter";
 
 // Placeholder components
 const Suppliers = () => (
@@ -41,6 +42,7 @@ const componentMap: Record<string, any> = {
   Reports,
   ImageGallery,
   AuditLog,
+  NotificationCenter,
   UserManagement,
   Suppliers,
   Settings,
