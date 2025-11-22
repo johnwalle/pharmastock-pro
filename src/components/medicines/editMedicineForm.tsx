@@ -71,6 +71,7 @@ export default function EditMedicineForm({
   }, [medicine, reset, setValue]);
 
   const onSubmit = async (data: UpdateMedicineFormValues) => {
+    console.log("🔥 FORM SUBMITTED!", data);
     try {
       const finalUnitType =
         data.unitType === 'other' ? data.customUnitType?.trim() : data.unitType;
