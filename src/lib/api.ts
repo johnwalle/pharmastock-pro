@@ -1,39 +1,57 @@
-// import axios from 'axios';
+import authStore from '@/store/authStore';
+import axios from 'axios';
 
-// let accessToken = null;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// const api = axios.create({
-//   baseURL: 'http://localhost:4000/api',
-//   withCredentials: true,
-// });
+interface medicineData {
+    title: string;
+    message: string;
+}
 
-// api.interceptors.request.use(async (config) => {
-//   if (accessToken) {
-//     config.headers['Authorization'] = `Bearer ${accessToken}`;
-//   }
-//   return config;
-// });
+export const sendNotification = async (fcmToken: string, medicineData: medicineData) => {
+    try {
+        const response = await axios.post('/send-notification', {
+          token: fcmToken,
+          title: medicineData.title,
+          message: medicineData.message,
+      }, 
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }); 
+      const data = await response.data;
+      console.log(data);
+      return data;
+      } catch (error: any) {
+        console.error("Error sending notification:", error);
+        throw error.response ? error.response.data : new Error("Network error");
+      }
+}
 
-// api.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     if (error.response.status === 401 && !error.config._retry) {
-//       error.config._retry = true;
-//       try {
-//         const res = await axios.post('http://localhost:4000/api/refresh-token', {}, { withCredentials: true });
-//         accessToken = res.data.accessToken;
-//         error.config.headers['Authorization'] = `Bearer ${accessToken}`;
-//         return api(error.config);
-//       } catch (e) {
-//         window.location.href = '/login';
-//       }
-//     }
-//     return Promise.reject(error);
-//   }
-// );
-
-// export const setAccessToken = (token) => {
-//   accessToken = token;
-// };
-
-// export default api;
+export const createNotification = async ( userId: string, title: string, message: string, link: string | '') => {
+    const { userData } = authStore.getState();
+    try {
+      const token = userData?.tokens?.access?.token;
+      if(!token) throw new Error("User is not authenticated");
+      const response = await axios.post(`${API_URL}/notifications`, {
+        userId,
+        title,
+        message,
+        link,
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.data;
+    console.log(data);
+    return data;
+    } catch (error: any) {
+      console.error("Error creating notification:", error);
+      throw error.response ? error.response.data : new Error("Network error");
+    }
+  }
+  

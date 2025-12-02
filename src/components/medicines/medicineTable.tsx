@@ -86,7 +86,7 @@ export default function MedicineTable({
                       {new Date(med.expiryDate).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
-                      ${med.sellingPrice.toFixed(2)}
+                      ${med.sellingPrice?.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={med.status} />

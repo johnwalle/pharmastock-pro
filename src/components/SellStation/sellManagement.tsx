@@ -9,7 +9,7 @@ const ITEMS_PER_PAGE = 3;
 
 export default function SellStation() {
   const {
-    medicines,
+    medicines,  
     cart,
     search,
     loading,

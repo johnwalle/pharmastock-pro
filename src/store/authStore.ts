@@ -26,6 +26,7 @@ interface User {
   email: string;
   fullName: string;
   role: string;
+  fcmToken?: string;
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;

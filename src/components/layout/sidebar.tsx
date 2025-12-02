@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Bell,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -79,6 +80,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       name: "Audit Log",
       component: "AuditLog",
       icon: FileText,
+      visible: userRole === "admin",
+    },
+    {
+      name: "Notifications",
+      component: "NotificationCenter",
+      icon: Bell,
       visible: userRole === "admin",
     },
     {
