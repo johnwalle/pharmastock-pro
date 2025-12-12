@@ -18,6 +18,7 @@ export const useSellStation = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sellLoading, setSellLoading] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -77,65 +78,66 @@ export const useSellStation = () => {
 
   const sell = async () => {
     if (!apiUrl || cart.length === 0) return toast.error('Cart is empty!');
-  
+
     try {
+      setSellLoading(true);
       const token = authStore.getState().userData?.tokens.access.token;
       const userId = authStore.getState().userData?.user._id as string; // adjust if needed
       const fcmToken = authStore.getState().userData?.user.fcmToken; // change based on your setup
-  
+
       const payload = cart.map((item) => ({
         medicineId: item.medicine._id,
         quantity: item.quantity,
       }));
-  
+
       const { data } = await axios.post(
         `${apiUrl}/sell`,
         { cart: payload },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       // Update local medicines
       const updatedMedicines = [...medicines];
-  
+
       // Process each sold medicine
       for (const sold of data.data) {
         const index = updatedMedicines.findIndex((m) => m._id === sold.medicineId);
-  
+
         if (index >= 0) {
           // Update dispenser stock
           updatedMedicines[index].stockDispenser = sold.newDispenserStock;
-  
+
           // Also update status if backend returns updated status
           if (sold.status) {
             updatedMedicines[index].status = sold.status;
           }
-  
+
           const med = updatedMedicines[index];
-  
+
           /// 📌 HANDLE NOTIFICATIONS BASED ON STATUS  
           let title = '';
           let message = '';
-  
+
           if (med.status === 'low-stock') {
             title = `Low Stock Alert: ${med.brandName}`;
             message = `${med.brandName} is running low. Remaining stock: ${med.unitQuantity}`;
           }
-  
+
           if (med.status === 'expired') {
             title = `Expired Medicine: ${med.brandName}`;
             message = `${med.brandName} has expired and should not be dispensed.`;
           }
-  
+
           if (med.status === 'out-of-stock') {
             title = `Out of Stock: ${med.brandName}`;
             message = `${med.brandName} is now fully out of stock.`;
           }
-  
+
           // If there's a notification to send
           if (title && message && fcmToken) {
             try {
               await sendNotification(fcmToken, { title: title, message });
-  
+
               // After sending FCM → Create DB Notification
               await createNotification(
                 userId,
@@ -149,12 +151,13 @@ export const useSellStation = () => {
           }
         }
       }
-  
+
       // Update Zustand store
+      setSellLoading(false);
       setMedicines(updatedMedicines);
       setCart([]);
       toast.success('Sale processed successfully!');
-  
+
     } catch (err) {
       const axiosError = err as AxiosError<{ message: string }>;
       const message = axiosError.response?.data?.message || axiosError.message || 'Sale failed';
@@ -162,7 +165,7 @@ export const useSellStation = () => {
       console.error(message);
     }
   };
-  
+
   const filteredMedicines = medicines.filter(
     (med) =>
       med.brandName.toLowerCase().includes(search.toLowerCase()) ||
@@ -176,6 +179,7 @@ export const useSellStation = () => {
     setCart,
     search,
     loading,
+    sellLoading,
     totalPrice,
     setSearch,
     addToCart,
