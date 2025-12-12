@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Bell,
 } from "lucide-react";
+import { useNotificationStore } from "@/store/notificationStore";
 
 interface SidebarProps {
   userRole: "admin" | "pharmacist" | "manager";
@@ -35,6 +36,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const clearUserData = authStore((state) => state.clearUserData);
   const router = useRouter();
 
+  const { notifications } = useNotificationStore();
+  const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
+
   const logoutHandler = () => {
     clearUserData();
     router.push("/auth/signup");
@@ -42,22 +46,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const menuItems = [
     { name: "Dashboard", component: "Dashboard", icon: Home, visible: true },
-
     {
       name: "Medication Management",
       component: "MedicineManagement",
       icon: Pill,
       visible: ["admin", "pharmacist"].includes(userRole),
     },
-
-    // ⭐ NEW MENU ITEM — SELL STATION
     {
       name: "Sell Station",
       component: "SellStation",
       icon: Package,
       visible: ["admin", "pharmacist"].includes(userRole),
     },
-
     {
       name: "Search & Filter",
       component: "SearchFilter",
@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       } flex flex-col z-50 shadow-xl font-sans`}
     >
       {/* Logo Section */}
-      <div className="flex items-center justify-between p-4 border-b border-blue-700">
+      <div className="flex items-center justify-between p-4 border-b border-blue-700 relative">
         {!isCollapsed && (
           <div className="flex items-center space-x-2">
             <span className="p-1 rounded bg-[#0052CC] text-white font-semibold">
@@ -147,7 +147,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {menuItems
             .filter((item) => item.visible)
             .map((item) => (
-              <li key={item.name}>
+              <li key={item.name} className="relative">
                 <button
                   onClick={() => onSelectComponent(item.component)}
                   className={`flex items-center p-3 rounded-lg w-full text-left ${
@@ -162,8 +162,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <item.icon
                     className={`h-5 w-5 ${isCollapsed ? "mx-auto" : ""}`}
                   />
-                  {!isCollapsed && (
-                    <span className="text-sm tracking-wide">{item.name}</span>
+                  {!isCollapsed ? (
+                    <div className="flex justify-between items-center w-full">
+                      <span className="text-sm tracking-wide">{item.name}</span>
+                      {item.component === "NotificationCenter" && unreadCount > 0 && (
+                        <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    // Show badge on collapsed sidebar as small circle
+                    item.component === "NotificationCenter" && unreadCount > 0 && (
+                      <span className="absolute right-2 top-3 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                        {unreadCount}
+                      </span>
+                    )
                   )}
                 </button>
               </li>
