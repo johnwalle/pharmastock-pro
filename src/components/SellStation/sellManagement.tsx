@@ -13,6 +13,7 @@ export default function SellStation() {
     cart,
     search,
     loading,
+    sellLoading,
     totalPrice,
     setSearch,
     addToCart,
@@ -242,9 +243,10 @@ export default function SellStation() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={sell}
+                    disabled={sellLoading}
                     className="w-full py-3 sm:py-4 bg-white text-indigo-600 rounded-xl font-bold text-sm sm:text-lg shadow-sm hover:shadow-md transition"
                   >
-                    Process Sale
+                    {sellLoading ? "Processing" : "Process Sale"}
                   </motion.button>
                 </div>
               )}
