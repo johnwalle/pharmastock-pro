@@ -1,7 +1,6 @@
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { getMessaging, getToken, isSupported } from "firebase/messaging";
 
-// Replace the following with your app's Firebase project configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
@@ -14,25 +13,32 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-const messaging = async () => {
-  const supported = await isSupported();
-  return supported ? getMessaging(app) : null;
+// Function to return messaging instance and SW registration
+export const getMessagingInstance = async () => {
+  if (!(await isSupported())) return null;
+
+  const messaging = getMessaging(app);
+  const swRegistration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+
+  return { messaging, swRegistration };
 };
 
+// Fetch FCM token safely
 export const fetchToken = async () => {
+  const result = await getMessagingInstance();
+  if (!result) return null;
+
+  const { messaging, swRegistration } = result;
   try {
-    const fcmMessaging = await messaging();
-    if (fcmMessaging) {
-      const token = await getToken(fcmMessaging, {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
-      });
-      return token;
-    }
-    return null;
+    const token = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_FCM_VAPID_KEY,
+      serviceWorkerRegistration: swRegistration,
+    });
+    return token;
   } catch (err) {
-    console.error("An error occurred while fetching the token:", err);
+    console.error("Error fetching FCM token:", err);
     return null;
   }
 };
 
-export { app, messaging };
+export { app };
