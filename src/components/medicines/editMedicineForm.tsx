@@ -27,6 +27,7 @@ export default function EditMedicineForm({
   onSubmitForm,
   isLoading = false,
 }: EditMedicineFormProps) {
+  const [selectedImage, setSelectedImage] = useState<File | undefined>(undefined);
 
   const {
     register,
@@ -65,7 +66,7 @@ export default function EditMedicineForm({
         setSelectedImage(file);
       });
     }
-  }, [medicine, reset, setValue]);
+  }, [medicine, reset, setValue, selectedImage]);
 
   const onSubmit = async (data: UpdateMedicineFormValues) => {
     try {
