@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { Medicine } from '@/types/medicines';
 import authStore from './authStore';

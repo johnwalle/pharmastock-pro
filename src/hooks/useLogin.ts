@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import authStore from '@/store/authStore';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 interface LoginData {

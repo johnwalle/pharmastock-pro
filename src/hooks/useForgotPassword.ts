@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import axios, { AxiosError } from 'axios';
-import { useRouter } from 'next/navigation'; // ✅ App Router
 import { toast } from 'react-hot-toast';
 
 interface ForgotPasswordResult {
