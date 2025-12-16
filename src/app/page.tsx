@@ -258,7 +258,9 @@ const DashboardSection = () => (
               <Image
                 src="https://randomuser.me/api/portraits/women/65.jpg"
                 alt="Sarah"
-                className="w-10 h-10 rounded-full border border-gray-200"
+                width={40}
+                height={40}
+                className=" rounded-full border border-gray-200"
               />
               <p className="text-gray-700 text-sm md:text-base">
                 <span className="font-medium">Sarah</span> added new medicine
@@ -268,7 +270,9 @@ const DashboardSection = () => (
               <Image
                 src="https://randomuser.me/api/portraits/men/42.jpg"
                 alt="John"
-                className="w-10 h-10 rounded-full border border-gray-200"
+                width={40}
+                height={40}
+                className="rounded-full border border-gray-200"
               />
               <p className="text-gray-700 text-sm md:text-base">
                 <span className="font-medium">John</span> updated stock levels
