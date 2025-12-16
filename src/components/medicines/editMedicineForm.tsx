@@ -12,7 +12,6 @@ import {
   predefinedUnitTypesList,
 } from '@/validators/medicineSchema';
 import { Medicine } from '@/types/medicines';
-import { UploadDropzone } from './uploadDropzone';
 import { urlToFile } from '@/lib/urlToFile';
 
 interface EditMedicineFormProps {
@@ -28,7 +27,6 @@ export default function EditMedicineForm({
   onSubmitForm,
   isLoading = false,
 }: EditMedicineFormProps) {
-  const [selectedImage, setSelectedImage] = useState<File | undefined>(undefined);
 
   const {
     register,
