@@ -25,7 +25,7 @@ const ForgotPassword = () => {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
-  const { error, isLoading, sendResetLink } = useForgotPassword();
+  const { isLoading, sendResetLink } = useForgotPassword();
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     const toastId = toast.loading('Sending reset link...');

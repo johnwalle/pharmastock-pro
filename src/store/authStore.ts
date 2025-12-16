@@ -66,7 +66,7 @@ function getCookie(name: string): string {
   if (!isClient()) return '';
   const nameEQ = `${name}=`;
   const cookies = decodeURIComponent(document.cookie).split(';');
-  for (let c of cookies) {
+  for (const c of cookies) {
     const cookie = c.trim();
     if (cookie.startsWith(nameEQ)) {
       return cookie.substring(nameEQ.length);

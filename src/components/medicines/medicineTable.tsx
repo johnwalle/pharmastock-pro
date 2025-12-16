@@ -29,7 +29,7 @@ export default function MedicineTable({
   page,
   setPage,
 }: MedicineTableProps) {
-  const { medicines, loading, error, fetchMedicines, total } = useMedicineStore()
+  const { medicines, loading, fetchMedicines, total } = useMedicineStore()
   const [selectedMedicineId, setSelectedMedicineId] = useState<string | null>(null)
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null)
   const [selectedMoveMedicine, setSelectedMoveMedicine] = useState<Medicine | null>(null)
@@ -45,7 +45,7 @@ export default function MedicineTable({
       page,
       limit: perPage,
     })
-  }, [searchQuery, statusFilter, sortBy, order, page])
+  }, [searchQuery, statusFilter, sortBy, order, page,fetchMedicines])
 
   const handleDeleteClick = (id: string) => setSelectedMedicineId(id)
   const handleEditClick = (medicine: Medicine) => setSelectedMedicine(medicine)

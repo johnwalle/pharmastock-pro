@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import {
   FiActivity,
   FiAlertTriangle,
@@ -69,7 +70,7 @@ const Hero = () => (
     {/* Right Section */}
     <div className="relative w-full max-w-lg">
       <div className="relative">
-        <img
+        <Image
           src="https://img.freepik.com/free-vector/tiny-pharmacist-with-pills-vitamins-flat-vector-illustration-doctors-writing-prescriptions-antibiotics-working-together-helping-patients-cure-pharmacy-business-drugstore-concept_74855-23225.jpg?t=st=1763110768~exp=1763114368~hmac=1dee888533816e1556690a72901c30611dacf979d274c4bdb16cc45f46e3a9fa&w=1060"
           alt="Pharmacy Illustration"
           className="w-full rounded-xl shadow-lg"
@@ -144,26 +145,37 @@ const FeaturesSection = () => (
   </section>
 );
 
+interface DashboardCardProps {
+  icon: React.ReactNode; // React element for the icon
+  title: string;
+  value: string | number;
+  change?: string | number; // optional
+  color?: string;           // optional, for bg color
+}
 
-const DashboardCard = ({
+const DashboardCard: React.FC<DashboardCardProps> = ({
   icon,
   title,
   value,
   change,
   color,
-}: any) => (
-  <div
-    className={`flex flex-col bg-white rounded-lg p-4 shadow-sm border-t-4 ${color}`}
-  >
-    <div className="flex justify-between items-center">
-      <div className="text-2xl text-gray-500">{icon}</div>
-      <div className="text-sm text-green-600 font-semibold">{change}</div>
-    </div>
-    <p className="mt-4 text-gray-600 text-sm">{title}</p>
-    <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
-  </div>
-);
+}) => {
+  return (
+    <div className={`p-4 rounded-lg shadow ${color || 'bg-white'}`}>
+      <div className="flex items-center space-x-4">
+        {/* Icon */}
+        <div className="text-2xl text-gray-500">{icon}</div>
 
+        {/* Content */}
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+          <p className="text-xl font-bold">{value}</p>
+          {change && <p className="text-sm text-gray-400">{change}</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 
 const DashboardSection = () => (
@@ -243,7 +255,7 @@ const DashboardSection = () => (
           <h4 className="font-semibold text-gray-800 mb-4 text-lg">Recent Activity</h4>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <img
+              <Image
                 src="https://randomuser.me/api/portraits/women/65.jpg"
                 alt="Sarah"
                 className="w-10 h-10 rounded-full border border-gray-200"
@@ -253,7 +265,7 @@ const DashboardSection = () => (
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <img
+              <Image
                 src="https://randomuser.me/api/portraits/men/42.jpg"
                 alt="John"
                 className="w-10 h-10 rounded-full border border-gray-200"

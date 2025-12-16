@@ -16,7 +16,6 @@ const useLogin = () => {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const setUserData = authStore((state) => state.setUserData);
-    const router = useRouter();
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 

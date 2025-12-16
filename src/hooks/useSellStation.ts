@@ -42,7 +42,7 @@ export const useSellStation = () => {
 
   useEffect(() => {
     fetchMedicines();
-  }, []);
+  }, [fetchMedicines]);
 
   const addToCart = (medicine: Medicine) => {
     const existing = cart.find((c) => c.medicine._id === medicine._id);

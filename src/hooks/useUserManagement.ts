@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
-import { User } from '@/types/user';
 import authStore from '@/store/authStore';
 
 const useUserManagement = () => {

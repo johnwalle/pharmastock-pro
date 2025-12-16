@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ComponentType } from "react";
 import Sidebar from "@/components/layout/sidebar";
 import Dashboard from "@/components/dashboard/dashboard";
 import SearchFilter from "@/components/searchAndFilter/searchAndFilter";
@@ -13,29 +13,27 @@ import SellStation from "@/components/SellStation/sellManagement";
 import NotificationCenter from "@/components/notifications/notificationCenter";
 
 // Placeholder components
-const Suppliers = () => (
+const Suppliers: ComponentType = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1>
     <p>Manage supplier details.</p>
   </div>
 );
-const Settings = () => (
+const Settings: ComponentType = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
     <p>Configure system settings.</p>
   </div>
 );
-const Logout = () => (
+const Logout: ComponentType = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Logged Out</h1>
     <p>You have been logged out.</p>
   </div>
 );
 
-
-
 // Map all components
-const componentMap: Record<string, any> = {
+const componentMap: Record<string, ComponentType<any>> = {
   Dashboard,
   MedicineManagement,
   SearchFilter,

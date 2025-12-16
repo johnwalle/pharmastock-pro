@@ -5,6 +5,7 @@ import { FaEnvelope, FaLock } from 'react-icons/fa';
 import { HiExclamationCircle } from 'react-icons/hi';
 import { useRouter } from 'next/navigation';
 import useLogin from '@/hooks/useLogin';
+import Image from "next/image";
 
 const LoginForm: React.FC = () => {
   const { login, isLoading, error } = useLogin();
@@ -86,7 +87,7 @@ const LoginForm: React.FC = () => {
         className="w-full mt-2 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 flex justify-center items-center"
         onClick={() => (window.location.href = '/api/auth/google')}
       >
-        <img src="/google.png" alt="Google" className="w-4 h-4 mr-2" />
+        <Image src="/google.png" alt="Google" width={16} height={16} className="mr-2" />
         Sign in with Google
       </button>
     </form>

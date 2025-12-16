@@ -24,7 +24,6 @@ export default function UserManagementPage() {
     updateUserByAdmin,
     deleteUserByAdmin,
     isLoading,
-    error,
   } = useUserManagement();
 
   const fetchUsers = async () => {
@@ -51,7 +50,7 @@ export default function UserManagementPage() {
       } else {
         toast.error(data?.message || 'Failed to fetch users');
       }
-    } catch (err) {
+    } catch (_){
       toast.error('Failed to load users');
     }
   };

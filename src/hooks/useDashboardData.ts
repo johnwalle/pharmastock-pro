@@ -32,7 +32,7 @@ export const useDashboardData = () => {
             try {
                 const res = await axios.get(`${apiURl}/sell/analytics`, getAuthHeaders());
                 setData(res.data.data);
-            } catch (err) {
+            } catch (_) {
                 setError('Failed to load dashboard data');
             } finally {
                 setLoading(false);

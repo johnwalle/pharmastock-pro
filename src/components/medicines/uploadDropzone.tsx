@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import Image from 'next/image';
 
 type UploadDropzoneProps = {
   onFileSelect: (file: File | undefined) => void;
@@ -77,7 +78,7 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({ onFileSelect, er
 
       {preview && selectedFile && (
         <div className="relative flex items-center gap-4 p-4 bg-gray-50 border rounded-md shadow-sm">
-          <img
+          <Image
             src={preview}
             alt="Selected preview"
             className="w-16 h-16 object-cover rounded-md border"

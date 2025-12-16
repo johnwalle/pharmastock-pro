@@ -35,7 +35,7 @@ export default function Home() {
       page,
       limit,
     });
-  }, [searchTerm, statusFilter, expiryFilter, stockFilter, sortBy, order, page]);
+  }, [searchTerm, statusFilter, expiryFilter, stockFilter, sortBy, order, page, fetchMedicines]);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);

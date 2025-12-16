@@ -39,7 +39,7 @@ export default function NotificationCenter() {
     if (!notifications || notifications.length === 0) {
       fetchUserNotifications();
     }
-  }, []);
+  }, [fetchUserNotifications, notifications]);
 
   const grouped = groupNotifications(notifications);
 
@@ -140,7 +140,7 @@ export default function NotificationCenter() {
             <div className="w-20 h-20 bg-gray-200 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto">
               <Bell className="w-10 h-10 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold mt-4">You're all caught up!</h3>
+            <h3 className="text-xl font-semibold mt-4">You are all caught up!</h3>
             <p className="text-gray-500 dark:text-gray-400">
               No notifications at the moment.
             </p>

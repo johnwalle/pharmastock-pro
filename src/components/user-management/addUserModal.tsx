@@ -74,9 +74,14 @@ export const AddUserModal = ({ isOpen, onClose }: Props) => {
     try {
       await createUserByAdmin({ fullName, email, role, password });
       onClose(); // Trigger refresh from parent
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to create user');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        toast.error(err.message || 'Failed to create user');
+      } else {
+        toast.error('Failed to create user');
+      }
     }
+
   };
 
   return (

@@ -1,5 +1,4 @@
 'use client';
-import { ChangeEvent } from 'react';
 
 interface FilterBarProps {
   onActionChange: (action: string) => void;

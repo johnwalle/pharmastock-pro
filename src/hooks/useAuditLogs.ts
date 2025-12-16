@@ -33,8 +33,12 @@ const useAuditLogs = () => {
 
         const logsFromApi = response.data?.data || [];
         setLogs(logsFromApi);
-      } catch (err: any) {
-        setError(err);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err);
+        } else {
+          setError(new Error('An unknown error occurred while fetching audit logs.'));
+        }
       } finally {
         setLoading(false);
       }

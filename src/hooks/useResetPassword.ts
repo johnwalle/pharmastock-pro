@@ -34,12 +34,20 @@ export const useResetPassword = () => {
                 success: true,
                 message: response.data?.message || 'Password reset successful!',
             };
-        } catch (err: any) {
-            const message =
-                err?.response?.data?.message || err.message || 'Something went wrong.';
+        } catch (err: unknown) {
+            let message = 'Something went wrong.';
+
+            // Narrow err to an Axios error
+            if (axios.isAxiosError(err)) {
+                message = err.response?.data?.message || err.message || message;
+            } else if (err instanceof Error) {
+                message = err.message;
+            }
+
             setError(message);
             return { success: false, message };
-        } finally {
+        }
+        finally {
             setLoading(false);
         }
     };

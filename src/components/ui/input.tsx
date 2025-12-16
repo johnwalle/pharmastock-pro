@@ -76,7 +76,7 @@ const SignInCard: React.FC = () => {
         </button>
 
         <p className="mt-6 flex justify-center text-sm font-light text-gray-600">
-          Don't have an account?
+          Do not have an account?
           <a
             className="ml-1 font-bold text-cyan-500 hover:underline"
             href="#signup"

@@ -37,7 +37,7 @@ export default function MoveToDispenserModal({ medicine, open, onClose }: MoveTo
       setLoading(false)
       setQuantity(0)
       onClose()
-    } catch (err) {
+    } catch (_) {
       setError('Failed to move stock. Please try again.')
       setLoading(false)
     }

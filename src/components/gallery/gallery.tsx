@@ -41,7 +41,7 @@ export default function MedicinesPage() {
       page: 1,
       limit: 100,
     });
-  }, [search, filter]);
+  }, [search, filter, fetchMedicines]);
 
   return (
     <main className="p-6 max-w-7xl mx-auto">

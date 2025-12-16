@@ -109,5 +109,6 @@ export const useNotificationStore = create<NotificationStore>()(
         set({ error: message, loading: false });
       }
     },
+    
   }))
 );

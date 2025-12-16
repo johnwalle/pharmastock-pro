@@ -7,6 +7,7 @@ import { signupSchema, SignupFormValues } from '@/validators/authSchema';
 import useRegister from '@/hooks/useRegister';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa';
 import { HiExclamationCircle } from 'react-icons/hi';
+import Image from "next/image";
 
 interface SignupFormProps {
   onSuccess: () => void; // <-- passed from AuthPage
@@ -115,7 +116,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
         onClick={() => (window.location.href = '/api/auth/google')}
         className="w-full mt-2 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 flex justify-center items-center"
       >
-        <img src="/google.png" alt="Google" className="w-4 h-4 mr-2" />
+        <Image src="/google.png" alt="Google" width={16} height={16} className="mr-2" />
         Sign up with Google
       </button>
     </form>

@@ -65,7 +65,7 @@ const useFcmToken = (): UseFcmTokenReturn => {
 
   useEffect(() => {
     if ("Notification" in window) loadToken();
-  }, []);
+  }, [loadToken]);
 
   // Listen for foreground messages
   useEffect(() => {
@@ -102,11 +102,18 @@ const useFcmToken = (): UseFcmTokenReturn => {
           data: link ? { url: link } : undefined,
         });
 
-        n.onclick = (event) => {
+        n.onclick = function (event: Event) {
           event.preventDefault();
-          const url = (event.target as any)?.data?.url;
-          if (url) router.push(url);
+
+          // 'this' is the Notification instance
+          const target = event.target as Notification & { data?: { url?: string } };
+          const url = target.data?.url;
+
+          if (url) {
+            router.push(url);
+          }
         };
+
       });
     };
 

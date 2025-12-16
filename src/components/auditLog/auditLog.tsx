@@ -13,8 +13,6 @@ export default function AuditLogHome() {
   const { logs, loading, error } = useAuditLogs();
 
   const [filteredData, setFilteredData] = useState<AuditLogEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [userFilter, setUserFilter] = useState<string>('All');
   const [actionFilter, setActionFilter] = useState<string>('All');
   const [currentPage, setCurrentPage] = useState<number>(1);
 
