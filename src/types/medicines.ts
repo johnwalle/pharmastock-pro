@@ -8,19 +8,33 @@ export interface Medicine {
   strength: string;
 
   // Unit & quantity
-  unitType: 'strip' | 'pack' | 'vial' | 'bottle' | 'ampoule' | 'tube' | 'tin' | 'sachet' | 'each' | 'other';
-  customUnitType?: string;   // only used when unitType = "other"
+  unitType:
+    | 'strip'
+    | 'pack'
+    | 'vial'
+    | 'bottle'
+    | 'ampoule'
+    | 'tube'
+    | 'tin'
+    | 'sachet'
+    | 'each';
+
+  /**
+   * Used ONLY when a custom unit was entered via the form.
+   * Backend stores the resolved value here.
+   */
+  customUnitType?: string;
 
   unitQuantity: number;
-  subUnitQuantity?: number;  // optional
+  subUnitQuantity?: number;
 
   // Stock
-  stockStore: number;        // NEW (from schema)
-  stockDispenser: number;    // you already had this
+  stockStore: number;
+  stockDispenser: number;
   currentStockLevel?: number;
 
   // Pricing
-  purchaseCost: number;      // NEW
+  purchaseCost: number;
   sellingPrice: number;
 
   // Reorder

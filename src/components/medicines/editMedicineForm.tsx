@@ -18,8 +18,8 @@ import { urlToFile } from '@/lib/urlToFile';
 interface EditMedicineFormProps {
   medicine: Medicine;
   onClose: () => void;
-  onSubmitForm: (formData: FormData) => Promise<void>; // passed from modal
-  isLoading?: boolean; // optional loading prop
+  onSubmitForm: (formData: FormData) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export default function EditMedicineForm({
@@ -28,7 +28,6 @@ export default function EditMedicineForm({
   onSubmitForm,
   isLoading = false,
 }: EditMedicineFormProps) {
-  const [customUnit, setCustomUnit] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | undefined>(undefined);
 
   const {
@@ -42,27 +41,27 @@ export default function EditMedicineForm({
     resolver: zodResolver(updateMedicineSchema),
     defaultValues: {
       ...medicine,
-      customUnitType:
-        medicine.unitType && !predefinedUnitTypesList.includes(medicine.unitType)
-          ? medicine.unitType
-          : '',
+      unitType: predefinedUnitTypesList.includes(medicine.unitType)
+        ? medicine.unitType
+        : 'other',
+      customUnitType: medicine.customUnitType ?? '',
     },
   });
 
   const selectedUnitType = watch('unitType');
 
-  // Load initial data and image file
+  // Load initial data and image
   useEffect(() => {
     reset({
       ...medicine,
-      customUnitType:
-        medicine.unitType && !predefinedUnitTypesList.includes(medicine.unitType)
-          ? medicine.unitType
-          : '',
+      unitType: predefinedUnitTypesList.includes(medicine.unitType)
+        ? medicine.unitType
+        : 'other',
+      customUnitType: medicine.customUnitType ?? '',
     });
 
     if (medicine.imageURL) {
-      const filename = medicine.brandName.replace(/\s+/g, '_') + '_image.jpg';
+      const filename = `${medicine.brandName.replace(/\s+/g, '_')}_image.jpg`;
       urlToFile(medicine.imageURL, filename).then((file) => {
         setValue('image', file, { shouldValidate: true });
         setSelectedImage(file);
@@ -71,10 +70,15 @@ export default function EditMedicineForm({
   }, [medicine, reset, setValue]);
 
   const onSubmit = async (data: UpdateMedicineFormValues) => {
-    console.log("🔥 FORM SUBMITTED!", data);
     try {
-      const finalUnitType =
-        data.unitType === 'other' ? data.customUnitType?.trim() : data.unitType;
+      const resolvedUnitType =
+        data.unitType === 'other'
+          ? data.customUnitType?.trim()
+          : data.unitType;
+
+      if (!resolvedUnitType) {
+        throw new Error('Unit type is required');
+      }
 
       const formData = new FormData();
 
@@ -83,13 +87,13 @@ export default function EditMedicineForm({
       formData.append('genericName', data.genericName);
       formData.append('strength', data.strength);
       formData.append('batchNumber', data.batchNumber);
-      formData.append('supplierInfo', data.supplierInfo || '');
-      formData.append('storageConditions', data.storageConditions || '');
-      formData.append('notes', data.notes || '');
+      formData.append('supplierInfo', data.supplierInfo ?? '');
+      formData.append('storageConditions', data.storageConditions ?? '');
+      formData.append('notes', data.notes ?? '');
 
       // Numbers
       formData.append('unitQuantity', String(data.unitQuantity));
-      formData.append('subUnitQuantity', String(data.subUnitQuantity || ''));
+      formData.append('subUnitQuantity', String(data.subUnitQuantity ?? ''));
       formData.append('purchaseCost', String(data.purchaseCost));
       formData.append('sellingPrice', String(data.sellingPrice));
       formData.append('reorderThreshold', String(data.reorderThreshold));
@@ -97,22 +101,21 @@ export default function EditMedicineForm({
 
       // Selects
       formData.append('dosageForm', data.dosageForm);
-      formData.append('unitType', finalUnitType || '');
+      formData.append('unitType', resolvedUnitType);
       formData.append('prescriptionStatus', data.prescriptionStatus);
 
       // Dates
       formData.append('receivedDate', data.receivedDate);
       formData.append('expiryDate', data.expiryDate);
 
-      // Image (only if selected)
+      // Image
       if (data.image instanceof File) {
         formData.append('image', data.image);
       }
 
-      // Call parent modal submit handler
       await onSubmitForm(formData);
-    } catch (err) {
-      console.error('Form submission error:', err);
+    } catch (error) {
+      console.error('Form submission error:', error);
     }
   };
 
@@ -126,77 +129,54 @@ export default function EditMedicineForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Text Inputs */}
-          {['brandName','genericName','strength','batchNumber','supplierInfo','storageConditions'].map(field => (
+          {[
+            'brandName',
+            'genericName',
+            'strength',
+            'batchNumber',
+            'supplierInfo',
+            'storageConditions',
+          ].map((field) => (
             <div key={field}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {field}
+              </label>
               <input
                 {...register(field as keyof UpdateMedicineFormValues)}
-                className={clsx('w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
-                  errors[field as keyof UpdateMedicineFormValues] && 'border-red-500')}
+                className={clsx(
+                  'w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
+                  errors[field as keyof UpdateMedicineFormValues] &&
+                    'border-red-500'
+                )}
               />
               {errors[field as keyof UpdateMedicineFormValues] && (
                 <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
-                  {String(errors[field as keyof UpdateMedicineFormValues]?.message)}
+                  {String(
+                    errors[field as keyof UpdateMedicineFormValues]?.message
+                  )}
                 </p>
               )}
             </div>
           ))}
-
-          {/* Number Inputs */}
-          {['unitQuantity','subUnitQuantity','purchaseCost','sellingPrice','reorderThreshold','reorderQuantity'].map(field => (
-            <div key={field}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field}</label>
-              <input
-                type="number"
-                step={field.includes('Price') || field.includes('Cost') ? 0.01 : 1}
-                {...register(field as keyof UpdateMedicineFormValues)}
-                className={clsx('w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200',
-                  errors[field as keyof UpdateMedicineFormValues] && 'border-red-500')}
-              />
-              {errors[field as keyof UpdateMedicineFormValues] && (
-                <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {String(errors[field as keyof UpdateMedicineFormValues]?.message)}
-                </p>
-              )}
-            </div>
-          ))}
-
-          {/* Dosage Form */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dosage Form *</label>
-            <select
-              {...register('dosageForm')}
-              className={clsx('w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
-                errors.dosageForm && 'border-red-500')}
-            >
-              <option value="">Select dosage form</option>
-              {['Tablet','Capsule','Syrup','Injection','Cream','Inhaler','Other'].map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-          </div>
 
           {/* Unit Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Type *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Unit Type *
+            </label>
             <select
               {...register('unitType')}
-              className={clsx('w-full border rounded-md px-3 py-2 text-sm',
-                errors.unitType && 'border-red-500')}
-              onChange={e => {
-                const val = e.target.value;
-                setValue('unitType', val);
-                if (val !== 'other') {
-                  setCustomUnit('');
-                  setValue('customUnitType', '');
-                }
-              }}
+              className={clsx(
+                'w-full border rounded-md px-3 py-2 text-sm',
+                errors.unitType && 'border-red-500'
+              )}
             >
               <option value="">Select unit type</option>
-              {predefinedUnitTypesList.map(unit => (
-                <option key={unit} value={unit}>{unit}</option>
+              {predefinedUnitTypesList.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
               ))}
               <option value="other">Other</option>
             </select>
@@ -205,67 +185,10 @@ export default function EditMedicineForm({
               <input
                 type="text"
                 {...register('customUnitType')}
-                value={customUnit}
-                onChange={e => {
-                  setCustomUnit(e.target.value);
-                  setValue('customUnitType', e.target.value);
-                }}
                 placeholder="Enter custom unit type"
                 className="mt-2 w-full border rounded-md px-3 py-2 text-sm"
               />
             )}
-          </div>
-
-          {/* Prescription Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Prescription Status *</label>
-            <select
-              {...register('prescriptionStatus')}
-              className={clsx('w-full border rounded-md px-3 py-2 text-sm text-gray-600 focus:ring focus:ring-blue-200',
-                errors.prescriptionStatus && 'border-red-500')}
-            >
-              <option value="">Select status</option>
-              <option value="Prescription">Prescription</option>
-              <option value="OTC">OTC</option>
-              <option value="Controlled">Controlled</option>
-            </select>
-          </div>
-
-          {/* Dates */}
-          {['receivedDate','expiryDate'].map(field => (
-            <div key={field}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{field}</label>
-              <input
-                type="date"
-                {...register(field as keyof UpdateMedicineFormValues)}
-                className="w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200"
-              />
-            </div>
-          ))}
-
-          {/* Image */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Medicine Image</label>
-            <UploadDropzone
-              onFileSelect={file => {
-                if (file) {
-                  setValue('image', file, { shouldValidate: true });
-                  setSelectedImage(file);
-                }
-              }}
-              error={errors.image?.message}
-            />
-            {selectedImage && <p className="text-xs text-green-600 mt-1">Selected: {selectedImage.name}</p>}
-          </div>
-
-          {/* Notes */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-            <textarea
-              {...register('notes')}
-              rows={3}
-              className="w-full border rounded-md px-3 py-2 text-sm focus:ring focus:ring-blue-200"
-            />
           </div>
         </div>
 
