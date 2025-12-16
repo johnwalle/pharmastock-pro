@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, ComponentType } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "@/components/layout/sidebar";
 import Dashboard from "@/components/dashboard/dashboard";
 import SearchFilter from "@/components/searchAndFilter/searchAndFilter";
@@ -9,44 +9,30 @@ import Reports from "@/components/report/report";
 import ImageGallery from "@/components/gallery/gallery";
 import AuditLog from "@/components/auditLog/auditLog";
 import UserManagement from "@/components/user-management/userManagement";
-import SellStation from "@/components/SellStation/sellManagement"; 
+import SellStation from "@/components/SellStation/sellManagement";
 import NotificationCenter from "@/components/notifications/notificationCenter";
 
 // Placeholder components
-const Suppliers: React.FC = () => (
+const Suppliers = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1>
     <p>Manage supplier details.</p>
   </div>
 );
-const Settings: React.FC = () => (
+
+const Settings = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
     <p>Configure system settings.</p>
   </div>
 );
-const Logout: React.FC = () => (
+
+const Logout = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Logged Out</h1>
     <p>You have been logged out.</p>
   </div>
 );
-
-// Map all components
-const componentMap: Record<string, ComponentType<any>> = {
-  Dashboard,
-  MedicineManagement,
-  SearchFilter,
-  Reports,
-  ImageGallery,
-  AuditLog,
-  NotificationCenter,
-  UserManagement,
-  Suppliers,
-  Settings,
-  Logout,
-  SellStation,
-};
 
 const MainLayout: React.FC = () => {
   const [selectedComponent, setSelectedComponent] = useState<string>("Dashboard");
@@ -54,24 +40,60 @@ const MainLayout: React.FC = () => {
 
   const handleSelectComponent = (component: string) => {
     setSelectedComponent(component);
-    if (window.innerWidth < 1024) setIsSidebarOpen(false);
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
   };
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
 
   useEffect(() => {
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth >= 1024);
     };
+
     window.addEventListener("resize", handleResize);
     handleResize();
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const ActiveComponent: ComponentType<any> = componentMap[selectedComponent] || Dashboard;
+  const renderActiveComponent = () => {
+    switch (selectedComponent) {
+      case "Dashboard":
+        return <Dashboard />;
+      case "MedicineManagement":
+        return <MedicineManagement />;
+      case "SearchFilter":
+        return <SearchFilter />;
+      case "Reports":
+        return <Reports />;
+      case "ImageGallery":
+        return <ImageGallery />;
+      case "AuditLog":
+        return <AuditLog />;
+      case "NotificationCenter":
+        return <NotificationCenter />;
+      case "UserManagement":
+        return <UserManagement />;
+      case "SellStation":
+        return <SellStation />;
+      case "Suppliers":
+        return <Suppliers />;
+      case "Settings":
+        return <Settings />;
+      case "Logout":
+        return <Logout />;
+      default:
+        return <Dashboard />;
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -84,6 +106,7 @@ const MainLayout: React.FC = () => {
         />
       </div>
 
+      {/* Overlay */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -91,6 +114,7 @@ const MainLayout: React.FC = () => {
         />
       )}
 
+      {/* Main */}
       <div className="flex-1 flex flex-col w-full">
         <header className="bg-white shadow-sm p-4 flex items-center justify-between lg:hidden z-30">
           <button
@@ -103,7 +127,6 @@ const MainLayout: React.FC = () => {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 strokeLinecap="round"
@@ -116,12 +139,8 @@ const MainLayout: React.FC = () => {
           <span className="text-lg font-bold text-blue-900">PharmaStock</span>
         </header>
 
-        <main
-          className={`flex-1 p-4 sm:p-6 transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? "lg:ml-0" : "lg:ml-16"
-          }`}
-        >
-          <ActiveComponent />
+        <main className="flex-1 p-4 sm:p-6">
+          {renderActiveComponent()}
         </main>
       </div>
     </div>
