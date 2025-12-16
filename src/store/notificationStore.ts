@@ -30,21 +30,24 @@ export const useNotificationStore = create<NotificationStore>()(
       set({ loading: true, error: null });
       try {
         const token = authStore.getState().userData?.tokens.access.token;
-        if(!token) throw new Error("User is not authenticated");
+        if (!token) throw new Error("User is not authenticated");
+
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const res = await axios.get(`${apiUrl}/notifications`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const { notifications } = res.data.data;
         set({
           notifications: notifications || [],
           loading: false,
         });
-      } catch (err: any) {
-        const message = err?.response?.data?.message || err.message || 'Failed to fetch notifications';
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+              'Failed to fetch notifications';
         set({ error: message, loading: false });
         toast.error(`${message}`);
       }
@@ -56,59 +59,55 @@ export const useNotificationStore = create<NotificationStore>()(
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const { userData } = authStore.getState();
         const token = userData?.tokens.access.token;
-
         if (!token) throw new Error('Authentication token missing');
 
-        await axios.post(`${apiUrl}/notifications/read`, {
-                notificationId,
-              }, 
-              {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.post(
+          `${apiUrl}/notifications/read`,
+          { notificationId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-        // make the read status true in local store
         const updatedNotifications = get().notifications.map((notif) =>
           notif._id === notificationId ? { ...notif, read: true } : notif
         );
         set({ notifications: updatedNotifications, loading: false });
-      } catch (err: any) {
-        const message = err?.response?.data?.message || err.message || 'Failed to mark as read';
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+              'Failed to mark as read';
         set({ error: message, loading: false });
-        // toast.error(`${message}`);
       }
     },
 
-    // --- NEW ACTION: MARK ALL NOTIFICATIONS AS READ ---
     markAllNotificationsAsRead: async () => {
       set({ loading: true, error: null });
-    
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
         const { userData } = authStore.getState();
         const token = userData?.tokens.access.token;
-    
         if (!token) throw new Error('Authentication token missing');
-    
-        // Mark all notifications as read in backend
+
         await axios.post(
-          `${apiUrl}/notifications/all-read`, {},
+          `${apiUrl}/notifications/all-read`,
+          {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-    
-        // Update local store
+
         const updatedNotifications = get().notifications.map((notif) => ({
           ...notif,
           read: true,
         }));
         set({ notifications: updatedNotifications, loading: false });
-      } catch (err: any) {
+      } catch (err: unknown) {
         const message =
-          err?.response?.data?.message || err.message || 'Failed to mark all notifications as read';
-    
+          err instanceof Error
+            ? err.message
+            : (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+              'Failed to mark all notifications as read';
         set({ error: message, loading: false });
-        // toast.error(`${message}`);
       }
     },
-    
   }))
 );
