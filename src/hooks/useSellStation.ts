@@ -30,10 +30,8 @@ export const useSellStation = () => {
       const { data } = await axios.get(`${apiUrl}/medicines/get/dispenser`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Fetched medicines:', data.data);
       setMedicines(data.data);
     } catch (error) {
-      console.error('Failed to fetch medicines', error);
       toast.error('Failed to fetch medicines');
     } finally {
       setLoading(false);
@@ -42,7 +40,7 @@ export const useSellStation = () => {
 
   useEffect(() => {
     fetchMedicines();
-  }, [fetchMedicines]);
+  }, []);
 
   const addToCart = (medicine: Medicine) => {
     const existing = cart.find((c) => c.medicine._id === medicine._id);
