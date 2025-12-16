@@ -50,9 +50,11 @@ export default function UserManagementPage() {
       } else {
         toast.error(data?.message || 'Failed to fetch users');
       }
-    } catch (_){
-      toast.error('Failed to load users');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load users';
+      toast.error(message);
     }
+
   };
 
   useEffect(() => {

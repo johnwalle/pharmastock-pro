@@ -13,7 +13,6 @@ interface ForgotPasswordResult {
 export const useForgotPassword = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const sendResetLink = async (email: string): Promise<ForgotPasswordResult> => {

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { toast } from 'react-hot-toast';
 import { Medicine } from '@/types/medicines';
 import authStore from './authStore';
@@ -31,20 +31,22 @@ export const useMedicineStore = create<MedicineStore>()(
       set({ loading: true, error: null });
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-        const res = await axios.get(`${apiUrl}/medicines`, { params: query });
+        const res = await axios.get<{ data: { medicines: Medicine[]; total: number } }>(
+          `${apiUrl}/medicines`,
+          { params: query }
+        );
 
         const { medicines, total } = res.data.data;
-        set({
-          medicines: medicines || [],
-          total: total || 0,
-          loading: false,
-        });
+        set({ medicines: medicines || [], total: total || 0, loading: false });
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message :
-          (err as any)?.response?.data?.message || 'Failed to fetch medicines';
+        let message = 'Failed to fetch medicines';
+        if (axios.isAxiosError(err)) {
+          message = err.response?.data?.message || err.message;
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
         set({ error: message, loading: false });
-        toast.error(`${message}`);
+        toast.error(message);
       }
     },
 
@@ -62,19 +64,18 @@ export const useMedicineStore = create<MedicineStore>()(
         });
 
         const updated = get().medicines.filter((med) => med._id !== id);
-        set({
-          medicines: updated,
-          total: get().total - 1,
-          loading: false,
-        });
+        set({ medicines: updated, total: get().total - 1, loading: false });
 
         toast.success('Medicine deleted successfully');
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message :
-          (err as any)?.response?.data?.message || 'Failed to delete medicine';
+        let message = 'Failed to delete medicine';
+        if (axios.isAxiosError(err)) {
+          message = err.response?.data?.message || err.message;
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
         set({ error: message, loading: false });
-        toast.error(`${message}`);
+        toast.error(message);
       }
     },
 
@@ -88,13 +89,13 @@ export const useMedicineStore = create<MedicineStore>()(
 
         if (!token) throw new Error('Authentication token missing');
 
-        const res = await axios.post(
+        const res = await axios.post<{ data: Medicine }>(
           `${apiUrl}/medicines/move-to-dispenser/${medicineId}`,
           { quantity },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        const updatedMedicine: Medicine = res.data.data;
+        const updatedMedicine = res.data.data;
 
         const updatedMedicines = get().medicines.map((med) =>
           med._id === medicineId ? updatedMedicine : med
@@ -104,17 +105,17 @@ export const useMedicineStore = create<MedicineStore>()(
         const medicineName = updatedMedicine.brandName;
         const status = updatedMedicine.status;
 
-        let title = "";
-        let message = "";
+        let title = '';
+        let message = '';
 
-        if (status === "low-stock") {
-          title = "Medicine Low Stock";
+        if (status === 'low-stock') {
+          title = 'Medicine Low Stock';
           message = `The medicine ${medicineName} is running low in stock. Restock soon.`;
-        } else if (status === "expired") {
-          title = "Medicine Expired";
+        } else if (status === 'expired') {
+          title = 'Medicine Expired';
           message = `The medicine ${medicineName} is expired. Please replace it immediately.`;
-        } else if (status === "out-of-stock") {
-          title = "Medicine Out of Stock";
+        } else if (status === 'out-of-stock') {
+          title = 'Medicine Out of Stock';
           message = `The medicine ${medicineName} is completely out of stock. Please restock immediately.`;
         }
 
@@ -122,20 +123,21 @@ export const useMedicineStore = create<MedicineStore>()(
           if (fcmToken) {
             await sendNotification(fcmToken, { title, message });
           }
-
           await createNotification(userData.user._id, title, message, '');
         }
 
         set({ medicines: updatedMedicines, loading: false });
         toast.success(`Moved ${quantity} units to dispenser successfully`);
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message :
-          (err as any)?.response?.data?.message || 'Failed to move stock';
+        let message = 'Failed to move stock';
+        if (axios.isAxiosError(err)) {
+          message = err.response?.data?.message || err.message;
+        } else if (err instanceof Error) {
+          message = err.message;
+        }
         set({ error: message, loading: false });
-        toast.error(`${message}`);
+        toast.error(message);
       }
     },
-
   }))
 );

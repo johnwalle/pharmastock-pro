@@ -27,7 +27,7 @@ async function apiRefreshToken(refreshToken: string) {
 
     const data = await res.json();
     return data.tokens;
-  } catch (_){
+  } catch {
     return null;
   }
 }

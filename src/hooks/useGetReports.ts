@@ -30,7 +30,7 @@ export const useGetReports = (range: string = 'Last 30 Days') => {
         });
 
         setData(res.data.data); // No longer res.data.data — your `/reports` already returns a clean object
-      } catch (err) {
+      } catch{
         setError('Failed to fetch report data');
       } finally {
         setLoading(false);

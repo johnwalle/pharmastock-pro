@@ -10,15 +10,25 @@ interface MedicineNotificationData {
 
 interface ApiErrorResponse {
   message: string;
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+interface SendNotificationResponse {
+  success: boolean;
+  data: unknown;
+}
+
+interface CreateNotificationResponse {
+  success: boolean;
+  data: unknown;
 }
 
 export const sendNotification = async (
   fcmToken: string,
   medicineData: MedicineNotificationData
-): Promise<any> => {
+): Promise<SendNotificationResponse> => {
   try {
-    const response: AxiosResponse = await axios.post(
+    const response: AxiosResponse<SendNotificationResponse> = await axios.post(
       '/send-notification',
       {
         token: fcmToken,
@@ -49,13 +59,13 @@ export const createNotification = async (
   title: string,
   message: string,
   link: string = ''
-): Promise<any> => {
+): Promise<CreateNotificationResponse> => {
   const { userData } = authStore.getState();
   try {
     const token = userData?.tokens?.access?.token;
     if (!token) throw new Error('User is not authenticated');
 
-    const response: AxiosResponse = await axios.post(
+    const response: AxiosResponse<CreateNotificationResponse> = await axios.post(
       `${API_URL}/notifications`,
       {
         userId,
