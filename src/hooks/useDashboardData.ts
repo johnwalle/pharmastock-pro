@@ -31,7 +31,6 @@ export const useDashboardData = () => {
         const fetchDashboardData = async () => {
             try {
                 const res = await axios.get(`${apiURl}/sell/analytics`, getAuthHeaders());
-                console.log('Dashboard data fetched:', res.data);
                 setData(res.data.data);
             } catch (err) {
                 setError('Failed to load dashboard data');

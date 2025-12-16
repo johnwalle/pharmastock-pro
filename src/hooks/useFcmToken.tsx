@@ -18,7 +18,6 @@ async function getNotificationPermissionAndToken(): Promise<string | null> {
     if (permission === "granted") return await fetchToken();
   }
 
-  console.log("Notification permission not granted.");
   return null;
 }
 

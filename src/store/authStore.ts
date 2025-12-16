@@ -103,7 +103,6 @@ const authStore = create<AuthState>((set, get) => ({
     setCookie('accessToken', userData.tokens.access.token, rememberMe ? cookieDays : undefined);
     setCookie('rememberMe', rememberMe ? '1' : '0', rememberMe ? cookieDays : undefined);
 
-    console.log('[authStore] ✅ setUserData:', userData);
   },
 
   clearUserData: () => {
@@ -111,7 +110,6 @@ const authStore = create<AuthState>((set, get) => ({
     setCookie('userData', '', -1);
     setCookie('accessToken', '', -1);
     setCookie('rememberMe', '', -1);
-    console.log('[authStore] 🔒 Cleared user data');
   },
 
   updateAccessToken: (accessToken) => {
@@ -136,7 +134,6 @@ const authStore = create<AuthState>((set, get) => ({
     setCookie('userData', JSON.stringify(updated), rememberMe ? cookieDays : undefined);
     setCookie('accessToken', accessToken.token, rememberMe ? cookieDays : undefined);
 
-    console.log('[authStore] 🔄 Access token updated:', accessToken);
   },
 }));
 

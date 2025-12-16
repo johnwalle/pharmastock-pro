@@ -162,7 +162,6 @@ export const useSellStation = () => {
       const axiosError = err as AxiosError<{ message: string }>;
       const message = axiosError.response?.data?.message || axiosError.message || 'Sale failed';
       toast.error(message);
-      console.error(message);
     }
   };
 

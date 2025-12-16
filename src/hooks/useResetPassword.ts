@@ -18,8 +18,7 @@ export const useResetPassword = () => {
         try {
             setLoading(true);
             setError(null);
-            console.log('Resetting password with token:', token);
-            console.log('New password:', newPassword);
+
 
             const apiUrl = process.env.NEXT_PUBLIC_API_URL;
             if (!apiUrl) throw new Error('API URL is not defined.');
@@ -30,7 +29,6 @@ export const useResetPassword = () => {
 
 
 
-            console.log('Password reset response:', response);
 
             return {
                 success: true,
