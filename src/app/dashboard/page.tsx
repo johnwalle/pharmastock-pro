@@ -13,19 +13,19 @@ import SellStation from "@/components/SellStation/sellManagement";
 import NotificationCenter from "@/components/notifications/notificationCenter";
 
 // Placeholder components
-const Suppliers: ComponentType<{}> = () => (
+const Suppliers: React.FC = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Suppliers</h1>
     <p>Manage supplier details.</p>
   </div>
 );
-const Settings: ComponentType<{}> = () => (
+const Settings: React.FC = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Settings</h1>
     <p>Configure system settings.</p>
   </div>
 );
-const Logout: ComponentType<{}> = () => (
+const Logout: React.FC = () => (
   <div className="p-4 sm:p-6">
     <h1 className="text-xl sm:text-2xl font-bold">Logged Out</h1>
     <p>You have been logged out.</p>
@@ -33,7 +33,7 @@ const Logout: ComponentType<{}> = () => (
 );
 
 // Map all components
-const componentMap: Record<string, ComponentType<{}>> = {
+const componentMap: Record<string, ComponentType<any>> = {
   Dashboard,
   MedicineManagement,
   SearchFilter,
@@ -49,10 +49,10 @@ const componentMap: Record<string, ComponentType<{}>> = {
 };
 
 const MainLayout: React.FC = () => {
-  const [selectedComponent, setSelectedComponent] = useState<keyof typeof componentMap>("Dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedComponent, setSelectedComponent] = useState<string>("Dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
-  const handleSelectComponent = (component: keyof typeof componentMap) => {
+  const handleSelectComponent = (component: string) => {
     setSelectedComponent(component);
     if (window.innerWidth < 1024) setIsSidebarOpen(false);
   };
@@ -60,13 +60,15 @@ const MainLayout: React.FC = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   useEffect(() => {
-    const handleResize = () => setIsSidebarOpen(window.innerWidth >= 1024);
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth >= 1024);
+    };
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const ActiveComponent = componentMap[selectedComponent];
+  const ActiveComponent: ComponentType<any> = componentMap[selectedComponent] || Dashboard;
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -101,11 +103,12 @@ const MainLayout: React.FC = () => {
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2"
+                strokeWidth={2}
                 d="M4 6h16M4 12h16M4 18h16"
               />
             </svg>
