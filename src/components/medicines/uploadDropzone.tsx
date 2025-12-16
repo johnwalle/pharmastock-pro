@@ -80,8 +80,10 @@ export const UploadDropzone: React.FC<UploadDropzoneProps> = ({ onFileSelect, er
         <div className="relative flex items-center gap-4 p-4 bg-gray-50 border rounded-md shadow-sm">
           <Image
             src={preview}
+            width={64}
+            height={64}
             alt="Selected preview"
-            className="w-16 h-16 object-cover rounded-md border"
+            className="object-cover rounded-md border"
           />
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-700">{selectedFile.name}</p>
